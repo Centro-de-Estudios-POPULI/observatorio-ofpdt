@@ -1,0 +1,1656 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Simulador de Coparticipacion Tributaria — OFPDT</title>
+<meta name="description" content="Simulador interactivo del modelo 50/50 de coparticipacion tributaria para Bolivia. Observatorio de Finanzas Publicas y Desarrollo Territorial.">
+<meta name="theme-color" content="#071a0f">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%230d3320'/%3E%3Cpolygon points='16,3 26,6 30,14 28,23 21,29 11,29 4,23 2,14 6,6' fill='none' stroke='%236fcf8e' stroke-width='1.5' stroke-linejoin='round'/%3E%3Cpolygon points='19,6 27,11 27,20 22,26 14,27 8,23 6,16 8,9 14,6' fill='none' stroke='%236fcf8e' stroke-width='1' stroke-linejoin='round' opacity='.5'/%3E%3C/svg%3E">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&family=IBM+Plex+Sans:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --g900: #071a0f;
+  --g800: #0f3520;
+  --g700: #165031;
+  --g600: #1e6b42;
+  --g500: #27864f;
+  --g400: #3ca868;
+  --g300: #66c088;
+  --g200: #99d6ad;
+  --g100: #c7ebd1;
+  --g50:  #e8f7ee;
+  --gold: #b8860b;
+  --gold-light: #d4a017;
+  --gold-pale: #fdf1cc;
+  --red: #c71e1d;
+  --navy: #1e2530;
+  --navy-deep: #141a22;
+  --bg: #f5f1e8;
+  --bg2: #ede8db;
+  --bg3: #e2dccf;
+  --ink: #2a2016;
+  --ink2: #5a4d3e;
+  --mute: #8a7d6e;
+  --faint: #b5aa9a;
+  --white: #fdfaf3;
+  --shadow-sm: 0 1px 3px rgba(30,20,10,.06);
+  --shadow: 0 4px 16px rgba(30,20,10,.08);
+  --shadow-lg: 0 12px 40px rgba(30,20,10,.14);
+  --shadow-xl: 0 20px 60px rgba(30,20,10,.18);
+  --radius: 16px;
+  --radius-sm: 10px;
+  --max-w: 1320px;
+  --header-h: 72px;
+  --sidebar-w: 380px;
+}
+
+[data-theme="dark"] {
+  --bg: #121a14;
+  --bg2: #1a2a1e;
+  --bg3: #243028;
+  --ink: #d8e0da;
+  --ink2: #a0b0a4;
+  --mute: #7a8a7e;
+  --faint: #4a5a4e;
+  --white: #1a2a1e;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,.2);
+  --shadow: 0 4px 16px rgba(0,0,0,.25);
+  --shadow-lg: 0 12px 40px rgba(0,0,0,.35);
+  --shadow-xl: 0 20px 60px rgba(0,0,0,.45);
+}
+
+html { scroll-behavior: smooth; }
+body {
+  font-family: 'IBM Plex Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+  background: var(--bg);
+  color: var(--ink);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+/* ── Typography ── */
+h1, h2, h3, h4 { font-family: 'Playfair Display', Georgia, serif; font-weight: 700; line-height: 1.2; }
+.mono { font-family: 'IBM Plex Mono', monospace; }
+
+/* ── Header ── */
+.site-header {
+  position: sticky; top: 0; z-index: 1000;
+  background: rgba(7,26,15,.85);
+  backdrop-filter: blur(20px) saturate(1.5);
+  -webkit-backdrop-filter: blur(20px) saturate(1.5);
+  border-bottom: 1px solid rgba(102,192,136,.15);
+  height: var(--header-h);
+}
+.header-inner {
+  max-width: var(--max-w); margin: 0 auto;
+  padding: 0 24px; height: 100%;
+  display: flex; align-items: center; gap: 16px;
+}
+.header-logo svg { width: 40px; height: 40px; flex-shrink: 0; }
+.header-text { flex: 1; min-width: 0; }
+.header-title {
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 15px; font-weight: 600; color: #fff;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.header-sub {
+  font-size: 11px; color: var(--g300); opacity: .8;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.header-actions { display: flex; align-items: center; gap: 12px; flex-shrink: 0; }
+.header-back {
+  font-size: 13px; color: var(--g200); text-decoration: none;
+  display: flex; align-items: center; gap: 6px;
+  padding: 6px 14px; border-radius: 8px;
+  border: 1px solid rgba(102,192,136,.2);
+  transition: all .2s;
+}
+.header-back:hover { background: rgba(102,192,136,.1); border-color: rgba(102,192,136,.4); }
+.theme-toggle {
+  width: 36px; height: 36px; border-radius: 8px;
+  background: rgba(255,255,255,.08); border: 1px solid rgba(102,192,136,.2);
+  color: var(--g200); cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: all .2s; font-size: 16px;
+}
+.theme-toggle:hover { background: rgba(102,192,136,.15); }
+
+/* ── Hero ── */
+.hero {
+  background: linear-gradient(135deg, var(--navy-deep) 0%, var(--g900) 60%, var(--g800) 100%);
+  padding: 56px 24px 48px;
+  position: relative; overflow: hidden;
+}
+.hero::before {
+  content: ''; position: absolute; inset: 0;
+  background: radial-gradient(ellipse 80% 60% at 80% 40%, rgba(60,168,104,.08) 0%, transparent 70%);
+  pointer-events: none;
+}
+.hero-inner { max-width: var(--max-w); margin: 0 auto; position: relative; z-index: 1; }
+.hero h1 { font-size: clamp(24px, 4vw, 38px); color: #fff; margin-bottom: 10px; }
+.hero h1 span { color: var(--g300); }
+.hero-desc { font-size: 15px; color: var(--g200); max-width: 700px; margin-bottom: 32px; line-height: 1.7; opacity: .85; }
+
+.kpi-row { display: flex; flex-wrap: wrap; gap: 12px; }
+.kpi-pill {
+  background: rgba(255,255,255,.06);
+  border: 1px solid rgba(102,192,136,.15);
+  border-radius: var(--radius-sm); padding: 14px 20px;
+  min-width: 200px; flex: 1;
+  transition: all .3s;
+}
+.kpi-pill:hover { background: rgba(102,192,136,.1); border-color: rgba(102,192,136,.3); }
+.kpi-label { font-size: 11px; color: var(--g300); text-transform: uppercase; letter-spacing: .8px; margin-bottom: 4px; }
+.kpi-value { font-family: 'IBM Plex Mono', monospace; font-size: 20px; font-weight: 600; color: #fff; }
+.kpi-value.kpi-dynamic { color: var(--gold-light); }
+.kpi-sub { font-size: 12px; color: var(--g300); opacity: .7; margin-top: 2px; }
+
+/* ── Main layout ── */
+.main-wrap {
+  max-width: var(--max-w); margin: 0 auto; padding: 32px 24px;
+}
+.sim-grid {
+  display: grid;
+  grid-template-columns: var(--sidebar-w) 1fr;
+  gap: 24px;
+  align-items: start;
+}
+
+/* ── Cards ── */
+.card {
+  background: var(--white);
+  border: 1px solid var(--bg3);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+  transition: box-shadow .3s;
+}
+.card:hover { box-shadow: var(--shadow); }
+.card-header {
+  padding: 18px 22px 14px;
+  border-bottom: 1px solid var(--bg3);
+  display: flex; align-items: center; gap: 10px;
+}
+.card-header h3 {
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 14px; font-weight: 600; color: var(--ink);
+  letter-spacing: .3px;
+}
+.card-header .card-icon {
+  width: 28px; height: 28px; border-radius: 7px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px; flex-shrink: 0;
+}
+.card-icon-green { background: var(--g50); color: var(--g600); }
+.card-icon-gold { background: var(--gold-pale); color: var(--gold); }
+.card-body { padding: 22px; }
+
+/* ── Sidebar controls ── */
+.sidebar { position: sticky; top: calc(var(--header-h) + 20px); }
+.control-group { margin-bottom: 24px; }
+.control-group:last-child { margin-bottom: 0; }
+.control-label {
+  display: flex; justify-content: space-between; align-items: baseline;
+  font-size: 13px; font-weight: 500; color: var(--ink2); margin-bottom: 8px;
+}
+.control-label .val {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 13px; font-weight: 600; color: var(--g600);
+}
+.control-derived {
+  font-size: 12px; color: var(--mute); margin-top: 4px;
+  display: flex; justify-content: space-between;
+}
+.control-derived .val { font-family: 'IBM Plex Mono', monospace; color: var(--gold); font-weight: 500; }
+
+/* ── Range slider custom ── */
+input[type="range"] {
+  -webkit-appearance: none; appearance: none;
+  width: 100%; height: 6px; border-radius: 3px;
+  background: var(--bg3); outline: none; cursor: pointer;
+}
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none; appearance: none;
+  width: 20px; height: 20px; border-radius: 50%;
+  background: var(--g500); border: 3px solid var(--white);
+  box-shadow: 0 2px 6px rgba(0,0,0,.2);
+  cursor: pointer; transition: transform .15s;
+}
+input[type="range"]::-webkit-slider-thumb:hover { transform: scale(1.15); }
+input[type="range"]::-moz-range-thumb {
+  width: 20px; height: 20px; border-radius: 50%;
+  background: var(--g500); border: 3px solid var(--white);
+  box-shadow: 0 2px 6px rgba(0,0,0,.2);
+  cursor: pointer;
+}
+input[type="range"]:focus-visible::-webkit-slider-thumb { box-shadow: 0 0 0 3px rgba(39,134,79,.3); }
+
+/* ── Weights vis ── */
+.weights-bar {
+  display: flex; height: 10px; border-radius: 5px; overflow: hidden;
+  margin-top: 14px; gap: 1px;
+}
+.weights-bar div { transition: flex .3s ease; }
+.wb-pop { background: var(--g400); }
+.wb-area { background: var(--g600); }
+.wb-nbi { background: var(--gold); }
+.wb-frag { background: var(--red); }
+.weights-legend {
+  display: flex; flex-wrap: wrap; gap: 10px; margin-top: 10px; font-size: 11px; color: var(--mute);
+}
+.weights-legend span { display: flex; align-items: center; gap: 4px; }
+.weights-legend i { width: 8px; height: 8px; border-radius: 2px; display: inline-block; }
+
+/* ── Summary table ── */
+.summary-tbl { width: 100%; border-collapse: collapse; font-size: 13px; }
+.summary-tbl th {
+  text-align: left; font-weight: 600; padding: 10px 12px;
+  border-bottom: 2px solid var(--bg3); color: var(--ink2);
+  font-size: 11px; text-transform: uppercase; letter-spacing: .5px;
+}
+.summary-tbl td {
+  padding: 10px 12px; border-bottom: 1px solid var(--bg3);
+  vertical-align: middle;
+}
+.summary-tbl tr:last-child td { border-bottom: none; }
+.summary-tbl .num {
+  font-family: 'IBM Plex Mono', monospace; text-align: right;
+  font-weight: 500; font-size: 13px;
+}
+.summary-tbl .delta-pos { color: var(--g500); }
+.summary-tbl .delta-neg { color: var(--red); }
+.summary-tbl .delta-zero { color: var(--mute); }
+.summary-tbl .receptor-dot {
+  width: 10px; height: 10px; border-radius: 50%; display: inline-block;
+  margin-right: 8px; vertical-align: middle;
+}
+.summary-tbl tr.row-total { font-weight: 700; }
+.summary-tbl tr.row-total td { border-top: 2px solid var(--bg3); }
+
+/* ── Split bar ── */
+.split-bar-wrap { margin: 20px 0; }
+.split-bar-title { font-size: 12px; color: var(--mute); margin-bottom: 8px; text-transform: uppercase; letter-spacing: .5px; }
+.split-bar {
+  display: flex; height: 28px; border-radius: 6px; overflow: hidden;
+  box-shadow: inset 0 1px 3px rgba(0,0,0,.1);
+}
+.split-bar div {
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'IBM Plex Mono', monospace; font-size: 10px;
+  color: #fff; font-weight: 600; transition: flex .4s ease;
+  min-width: 0; overflow: hidden; white-space: nowrap;
+}
+.sb-tgn { background: var(--navy); }
+.sb-mun { background: var(--g600); }
+.sb-uni { background: var(--g400); }
+.sb-gob { background: var(--gold); }
+.sb-fondo { background: var(--red); }
+.split-legend {
+  display: flex; flex-wrap: wrap; gap: 14px; margin-top: 10px; font-size: 11px; color: var(--mute);
+}
+.split-legend span { display: flex; align-items: center; gap: 5px; }
+.split-legend i { width: 10px; height: 10px; border-radius: 3px; display: inline-block; }
+
+/* ── Dept table ── */
+.dept-tbl { width: 100%; border-collapse: collapse; font-size: 12px; }
+.dept-tbl th {
+  text-align: left; font-weight: 600; padding: 8px 10px;
+  border-bottom: 2px solid var(--bg3); color: var(--ink2);
+  font-size: 10px; text-transform: uppercase; letter-spacing: .5px;
+  position: sticky; top: 0; background: var(--white); z-index: 1;
+}
+.dept-tbl th.num, .dept-tbl td.num { text-align: right; }
+.dept-tbl td {
+  padding: 8px 10px; border-bottom: 1px solid var(--bg3);
+  font-family: 'IBM Plex Mono', monospace; font-size: 12px;
+}
+.dept-tbl td:first-child { font-family: 'IBM Plex Sans', sans-serif; font-weight: 500; }
+.dept-tbl tr:last-child td { font-weight: 700; border-top: 2px solid var(--bg3); }
+.dept-tbl tr:hover { background: var(--bg); }
+
+/* ── Chart container ── */
+.chart-wrap { position: relative; height: 320px; margin-top: 20px; }
+
+/* ── Map ── */
+.map-section { margin-top: 40px; }
+.map-container {
+  height: 560px; border-radius: var(--radius);
+  border: 1px solid var(--bg3); overflow: hidden;
+  box-shadow: var(--shadow);
+}
+#sim-map { height: 100%; width: 100%; background: var(--bg2); }
+.map-legend {
+  position: absolute; bottom: 30px; right: 16px; z-index: 800;
+  background: var(--white); padding: 14px 16px; border-radius: var(--radius-sm);
+  box-shadow: var(--shadow); font-size: 11px; color: var(--ink2);
+  border: 1px solid var(--bg3);
+}
+.map-legend .leg-title { font-weight: 600; margin-bottom: 8px; font-size: 12px; }
+.map-legend .leg-row { display: flex; align-items: center; gap: 8px; margin-bottom: 3px; }
+.map-legend .leg-swatch { width: 20px; height: 12px; border-radius: 2px; flex-shrink: 0; }
+
+/* ── Ranking table ── */
+.ranking-section { margin-top: 40px; }
+.ranking-controls {
+  display: flex; flex-wrap: wrap; gap: 12px; padding: 16px 22px;
+  border-bottom: 1px solid var(--bg3);
+}
+.ranking-controls input, .ranking-controls select {
+  font-family: 'IBM Plex Sans', sans-serif; font-size: 13px;
+  padding: 8px 14px; border: 1px solid var(--bg3);
+  border-radius: 8px; background: var(--bg);
+  color: var(--ink); outline: none; transition: border-color .2s;
+}
+.ranking-controls input { flex: 1; min-width: 200px; }
+.ranking-controls input:focus, .ranking-controls select:focus {
+  border-color: var(--g400);
+}
+.ranking-controls select { min-width: 160px; cursor: pointer; }
+.ranking-wrap { max-height: 600px; overflow-y: auto; }
+.ranking-tbl { width: 100%; border-collapse: collapse; font-size: 12px; }
+.ranking-tbl thead { position: sticky; top: 0; z-index: 2; }
+.ranking-tbl th {
+  text-align: left; font-weight: 600; padding: 10px 10px;
+  border-bottom: 2px solid var(--bg3); color: var(--ink2);
+  font-size: 10px; text-transform: uppercase; letter-spacing: .5px;
+  background: var(--white); cursor: pointer; user-select: none;
+  white-space: nowrap;
+}
+.ranking-tbl th:hover { color: var(--g600); }
+.ranking-tbl th.num { text-align: right; }
+.ranking-tbl th .sort-arrow { font-size: 10px; margin-left: 3px; opacity: .4; }
+.ranking-tbl th.sorted .sort-arrow { opacity: 1; color: var(--g500); }
+.ranking-tbl td {
+  padding: 8px 10px; border-bottom: 1px solid var(--bg3);
+  vertical-align: middle;
+}
+.ranking-tbl td.num {
+  font-family: 'IBM Plex Mono', monospace; text-align: right; font-size: 12px;
+}
+.ranking-tbl tr:hover { background: var(--g50); }
+[data-theme="dark"] .ranking-tbl tr:hover { background: rgba(60,168,104,.08); }
+.ranking-tbl tr.top10 td:first-child { border-left: 3px solid var(--g400); }
+.ranking-tbl tr.bottom10 td:first-child { border-left: 3px solid var(--red); }
+.ranking-tbl .badge {
+  font-size: 9px; font-weight: 700; padding: 2px 6px;
+  border-radius: 4px; margin-left: 6px; vertical-align: middle;
+}
+.badge-gaioc { background: var(--gold-pale); color: var(--gold); }
+.badge-mun { background: var(--g50); color: var(--g600); }
+.ranking-count { font-size: 12px; color: var(--mute); padding: 10px 22px; border-top: 1px solid var(--bg3); }
+
+/* ── Footer ── */
+.site-footer {
+  margin-top: 60px; padding: 40px 24px;
+  background: var(--g900); color: var(--g200);
+  border-top: 1px solid rgba(102,192,136,.1);
+}
+.footer-inner { max-width: var(--max-w); margin: 0 auto; }
+.footer-inner h4 { font-size: 13px; color: var(--g300); margin-bottom: 8px; }
+.footer-inner p { font-size: 12px; line-height: 1.8; color: var(--g300); opacity: .7; }
+.footer-credit {
+  margin-top: 20px; padding-top: 20px;
+  border-top: 1px solid rgba(102,192,136,.1);
+  font-size: 12px; color: var(--g300); opacity: .5;
+  display: flex; justify-content: space-between; flex-wrap: wrap; gap: 8px;
+}
+
+/* ── Loading ── */
+.loading-overlay {
+  position: fixed; inset: 0; z-index: 9999;
+  background: var(--g900);
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  transition: opacity .5s; gap: 20px;
+}
+.loading-overlay.hidden { opacity: 0; pointer-events: none; }
+.loading-spinner {
+  width: 40px; height: 40px; border: 3px solid rgba(102,192,136,.2);
+  border-top-color: var(--g300); border-radius: 50%;
+  animation: spin .8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.loading-text { color: var(--g300); font-size: 14px; }
+
+/* ── Section titles ── */
+.section-title {
+  font-size: clamp(20px, 3vw, 28px); color: var(--ink);
+  margin-bottom: 6px;
+}
+.section-sub { font-size: 14px; color: var(--mute); margin-bottom: 24px; }
+
+/* ── Responsive ── */
+@media (max-width: 960px) {
+  .sim-grid { grid-template-columns: 1fr; }
+  .sidebar { position: static; }
+  .header-back span { display: none; }
+  .kpi-pill { min-width: 140px; }
+  .methodology-section > div[style*="grid-template-columns"] { grid-template-columns: 1fr !important; }
+}
+@media (max-width: 600px) {
+  .hero { padding: 36px 16px 32px; }
+  .main-wrap { padding: 20px 16px; }
+  .kpi-pill { min-width: 100%; }
+  .header-inner { padding: 0 12px; }
+  .map-container { height: 400px; }
+  .chart-wrap { height: 240px; }
+  .ranking-controls { flex-direction: column; }
+  .ranking-controls input, .ranking-controls select { min-width: 100%; }
+}
+
+/* ── Leaflet tooltip override ── */
+.leaflet-tooltip.entity-tooltip {
+  background: var(--white); color: var(--ink);
+  border: 1px solid var(--bg3); border-radius: 10px;
+  padding: 12px 16px; font-size: 12px; font-family: 'IBM Plex Sans', sans-serif;
+  box-shadow: var(--shadow-lg); max-width: 280px;
+  line-height: 1.6;
+}
+.leaflet-tooltip.entity-tooltip::before { border-right-color: var(--bg3); }
+.entity-tooltip .tt-name { font-weight: 600; font-size: 14px; color: var(--g700); margin-bottom: 4px; }
+.entity-tooltip .tt-dept { font-size: 11px; color: var(--mute); margin-bottom: 8px; }
+.entity-tooltip .tt-row { display: flex; justify-content: space-between; gap: 16px; }
+.entity-tooltip .tt-label { color: var(--mute); }
+.entity-tooltip .tt-val { font-family: 'IBM Plex Mono', monospace; font-weight: 600; color: var(--ink); }
+.entity-tooltip .tt-highlight { color: var(--g600); font-size: 13px; margin-top: 6px; padding-top: 6px; border-top: 1px solid var(--bg3); }
+
+[data-theme="dark"] .leaflet-tooltip.entity-tooltip { background: var(--bg2); color: var(--ink); border-color: var(--bg3); }
+[data-theme="dark"] .entity-tooltip .tt-name { color: var(--g200); }
+[data-theme="dark"] .leaflet-tooltip.entity-tooltip::before { border-right-color: var(--bg3); }
+
+/* ── Transition utilities ── */
+.transition-num { transition: color .3s; }
+
+/* ── Scrollbar ── */
+.ranking-wrap::-webkit-scrollbar { width: 6px; }
+.ranking-wrap::-webkit-scrollbar-track { background: var(--bg); }
+.ranking-wrap::-webkit-scrollbar-thumb { background: var(--bg3); border-radius: 3px; }
+.ranking-wrap::-webkit-scrollbar-thumb:hover { background: var(--mute); }
+
+/* ── Dark mode map ── */
+[data-theme="dark"] #sim-map { background: #1a2a1e; }
+[data-theme="dark"] .map-legend { background: var(--bg2); border-color: var(--bg3); }
+[data-theme="dark"] .dept-tbl th { background: var(--white); }
+[data-theme="dark"] .ranking-tbl th { background: var(--white); }
+[data-theme="dark"] .ranking-tbl tr.top10 td:first-child { border-left-color: var(--g300); }
+
+/* ── Info box ── */
+.info-box {
+  background: var(--g50); border: 1px solid var(--g100);
+  border-radius: var(--radius-sm); padding: 14px 18px;
+  font-size: 12px; color: var(--g700); line-height: 1.7;
+  margin-bottom: 20px;
+}
+[data-theme="dark"] .info-box { background: rgba(39,134,79,.08); border-color: rgba(39,134,79,.15); color: var(--g200); }
+.info-box strong { font-weight: 600; }
+
+/* ── Divider ── */
+.divider { height: 1px; background: var(--bg3); margin: 20px 0; }
+</style>
+</head>
+<body>
+
+<!-- Loading overlay -->
+<div class="loading-overlay" id="loadingOverlay">
+  <div class="loading-spinner"></div>
+  <div class="loading-text">Cargando simulador...</div>
+</div>
+
+<!-- Header -->
+<header class="site-header">
+  <div class="header-inner">
+    <a href="index.html" class="header-logo" aria-label="Inicio">
+      <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <polygon points="20,2 33,6 38,16 36,27 28,35 12,35 4,27 2,16 7,6"
+                 stroke="#66c088" stroke-width="1.5" stroke-linejoin="round" fill="none"/>
+        <polygon points="20,6 30,9 34,17 32,25 26,31 14,31 8,25 6,17 10,9"
+                 stroke="#66c088" stroke-width="1" stroke-linejoin="round" fill="none" opacity=".6"/>
+        <polygon points="20,10 27,12 30,18 28,23 24,27 16,27 12,23 10,18 13,12"
+                 stroke="#66c088" stroke-width=".8" stroke-linejoin="round" fill="none" opacity=".35"/>
+        <polygon points="20,14 24,15 26,19 25,22 22,24 18,24 15,22 14,19 16,15"
+                 stroke="#66c088" stroke-width=".6" stroke-linejoin="round" fill="none" opacity=".2"/>
+      </svg>
+    </a>
+    <div class="header-text">
+      <div class="header-title">Simulador de Coparticipacion Tributaria</div>
+      <div class="header-sub">Observatorio de Finanzas Publicas y Desarrollo Territorial</div>
+    </div>
+    <div class="header-actions">
+      <a href="index.html" class="header-back">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+        <span>Volver</span>
+      </a>
+      <button class="theme-toggle" id="themeToggle" aria-label="Cambiar tema" title="Modo oscuro/claro">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1111.21 3a7 7 0 009.79 9.79z"/></svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+<!-- Hero -->
+<section class="hero">
+  <div class="hero-inner">
+    <h1>Simulador de Coparticipacion Tributaria <span>&middot; Modelo 50/50</span></h1>
+    <p class="hero-desc">
+      Herramienta interactiva para explorar escenarios de redistribucion fiscal subnacional.
+      El modelo propuesto reduce la participacion del TGN del 74,6% al 50% y crea un Fondo de Equidad
+      que compensa a municipios y autonomias por pobreza, fragilidad fiscal, extension territorial y poblacion.
+    </p>
+    <div class="kpi-row">
+      <div class="kpi-pill">
+        <div class="kpi-label">Base Coparticipable (SIN 2025)</div>
+        <div class="kpi-value mono">Bs 48.433 MM</div>
+        <div class="kpi-sub">Recaudacion tributaria nacional</div>
+      </div>
+      <div class="kpi-pill">
+        <div class="kpi-label">TGN (fijo)</div>
+        <div class="kpi-value mono">50,000%</div>
+        <div class="kpi-sub">Bs 24.217 MM</div>
+      </div>
+      <div class="kpi-pill">
+        <div class="kpi-label">Gobernaciones</div>
+        <div class="kpi-value mono kpi-dynamic" id="kpiGob">0,000%</div>
+        <div class="kpi-sub" id="kpiGobBs">Bs 0 MM</div>
+      </div>
+      <div class="kpi-pill">
+        <div class="kpi-label">Fondo de Equidad</div>
+        <div class="kpi-value mono kpi-dynamic" id="kpiFondo">24,645%</div>
+        <div class="kpi-sub" id="kpiFondoBs">Bs 11.935 MM</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Main content -->
+<main class="main-wrap">
+  <div class="sim-grid">
+
+    <!-- Sidebar controls -->
+    <aside class="sidebar">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-icon card-icon-green">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20V10M18 20V4M6 20v-4"/></svg>
+          </div>
+          <h3>Parametros del modelo</h3>
+        </div>
+        <div class="card-body">
+          <div class="info-box">
+            <strong>Espacio disponible:</strong> 24,645% de la base coparticipable.
+            Se reparte entre Gobernaciones (per capita) y el Fondo de Equidad (criterios ponderados).
+          </div>
+
+          <!-- Gobernaciones slider -->
+          <div class="control-group">
+            <div class="control-label">
+              Gobernaciones
+              <span class="val" id="lblGobPct">0,0%</span>
+            </div>
+            <input type="range" id="sliderGob" min="0" max="24.645" step="0.5" value="0">
+            <div class="control-derived">
+              <span>Monto:</span>
+              <span class="val" id="lblGobBs">Bs 0</span>
+            </div>
+          </div>
+
+          <div class="control-group">
+            <div class="control-label">
+              Fondo de Equidad (residual)
+              <span class="val" id="lblFondoPct">24,645%</span>
+            </div>
+            <div class="control-derived">
+              <span>Monto:</span>
+              <span class="val" id="lblFondoBs">Bs 11.935 MM</span>
+            </div>
+          </div>
+
+          <div class="divider"></div>
+
+          <!-- Weight sliders -->
+          <div class="control-group">
+            <div class="control-label">
+              Poblacion
+              <span class="val" id="lblWPop">40%</span>
+            </div>
+            <input type="range" id="sliderWPop" min="0" max="100" step="1" value="40" data-weight="pop">
+          </div>
+          <div class="control-group">
+            <div class="control-label">
+              Extension territorial
+              <span class="val" id="lblWArea">15%</span>
+            </div>
+            <input type="range" id="sliderWArea" min="0" max="100" step="1" value="15" data-weight="area">
+          </div>
+          <div class="control-group">
+            <div class="control-label">
+              NBI (pobreza)
+              <span class="val" id="lblWNbi">30%</span>
+            </div>
+            <input type="range" id="sliderWNbi" min="0" max="100" step="1" value="30" data-weight="nbi">
+          </div>
+          <div class="control-group">
+            <div class="control-label">
+              Fragilidad fiscal
+              <span class="val" id="lblWFrag">15%</span>
+            </div>
+            <input type="range" id="sliderWFrag" min="0" max="100" step="1" value="15" data-weight="frag">
+          </div>
+
+          <div class="weights-bar">
+            <div class="wb-pop" id="wbPop" style="flex:40"></div>
+            <div class="wb-area" id="wbArea" style="flex:15"></div>
+            <div class="wb-nbi" id="wbNbi" style="flex:30"></div>
+            <div class="wb-frag" id="wbFrag" style="flex:15"></div>
+          </div>
+          <div class="weights-legend">
+            <span><i class="wb-pop" style="background:var(--g400)"></i> Poblacion</span>
+            <span><i class="wb-area" style="background:var(--g600)"></i> Area</span>
+            <span><i class="wb-nbi" style="background:var(--gold)"></i> NBI</span>
+            <span><i class="wb-frag" style="background:var(--red)"></i> Fragilidad</span>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Results panel -->
+    <div class="results-panel">
+      <!-- Summary card -->
+      <div class="card" style="margin-bottom:24px">
+        <div class="card-header">
+          <div class="card-icon card-icon-gold">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2"/><path d="M1 10h22"/></svg>
+          </div>
+          <h3>Distribucion de la base coparticipable</h3>
+        </div>
+        <div class="card-body">
+          <table class="summary-tbl" id="summaryTable">
+            <thead>
+              <tr><th>Receptor</th><th class="num">%</th><th class="num">Bs MM</th><th class="num">Delta vs. actual</th></tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+          <div class="split-bar-wrap">
+            <div class="split-bar-title">Composicion porcentual</div>
+            <div class="split-bar" id="splitBar">
+              <div class="sb-tgn" style="flex:50">TGN 50%</div>
+              <div class="sb-mun" style="flex:20">Mun 20%</div>
+              <div class="sb-uni" style="flex:5.355">Uni 5,4%</div>
+              <div class="sb-gob" style="flex:0"></div>
+              <div class="sb-fondo" style="flex:24.645"></div>
+            </div>
+            <div class="split-legend">
+              <span><i style="background:var(--navy)"></i> TGN</span>
+              <span><i style="background:var(--g600)"></i> Municipios</span>
+              <span><i style="background:var(--g400)"></i> Universidades</span>
+              <span><i style="background:var(--gold)"></i> Gobernaciones</span>
+              <span><i style="background:var(--red)"></i> Fondo de Equidad</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Department breakdown -->
+      <div class="card" style="margin-bottom:24px">
+        <div class="card-header">
+          <div class="card-icon card-icon-green">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21h18M3 7v14M21 7v14M6 21V10h4v11M14 21V10h4v11M10 7l2-4 2 4"/></svg>
+          </div>
+          <h3>Desglose departamental</h3>
+        </div>
+        <div class="card-body" style="overflow-x:auto">
+          <table class="dept-tbl" id="deptTable">
+            <thead>
+              <tr>
+                <th>Departamento</th>
+                <th class="num">Poblacion</th>
+                <th class="num">Gob. Bs</th>
+                <th class="num">Fondo Bs</th>
+                <th class="num">Total Bs</th>
+                <th class="num">Per capita</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+          <div class="chart-wrap">
+            <canvas id="deptChart"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Map section -->
+  <section class="map-section">
+    <h2 class="section-title">Mapa de asignacion per capita</h2>
+    <p class="section-sub">Fondo de Equidad por entidad, coloreado segun Bs per capita asignados.</p>
+    <div class="map-container" style="position:relative">
+      <div id="sim-map"></div>
+      <div class="map-legend" id="mapLegend"></div>
+    </div>
+  </section>
+
+  <!-- Ranking section -->
+  <section class="ranking-section">
+    <h2 class="section-title">Ranking de entidades</h2>
+    <p class="section-sub">343 municipios y autonomias indigenas ordenados por asignacion del Fondo de Equidad.</p>
+    <div class="card">
+      <div class="ranking-controls">
+        <input type="text" id="rankSearch" placeholder="Buscar municipio o GAIOC...">
+        <select id="rankDeptFilter">
+          <option value="">Todos los departamentos</option>
+        </select>
+      </div>
+      <div class="ranking-wrap">
+        <table class="ranking-tbl" id="rankingTable">
+          <thead>
+            <tr>
+              <th data-col="rank" class="num"># <span class="sort-arrow">&#9650;</span></th>
+              <th data-col="nombre">Entidad <span class="sort-arrow">&#9650;</span></th>
+              <th data-col="dpto">Dpto. <span class="sort-arrow">&#9650;</span></th>
+              <th data-col="tipo">Tipo <span class="sort-arrow">&#9650;</span></th>
+              <th data-col="poblacion" class="num">Poblacion <span class="sort-arrow">&#9650;</span></th>
+              <th data-col="area" class="num">Area km&sup2; <span class="sort-arrow">&#9650;</span></th>
+              <th data-col="nbi" class="num">NBI% <span class="sort-arrow">&#9650;</span></th>
+              <th data-col="frag" class="num">Fragilidad% <span class="sort-arrow">&#9650;</span></th>
+              <th data-col="fondo" class="num">Fondo Bs <span class="sort-arrow">&#9650;</span></th>
+              <th data-col="percapita" class="num">Per capita <span class="sort-arrow">&#9650;</span></th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+      <div class="ranking-count" id="rankingCount"></div>
+    </div>
+  </section>
+
+  <!-- Methodology section -->
+  <section class="methodology-section" style="margin-top:48px">
+    <h2 class="section-title">Metodologia</h2>
+    <p class="section-sub">Como se calcula la distribucion del Fondo de Equidad entre las 343 entidades.</p>
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-icon card-icon-green">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+          </div>
+          <h3>Modelo 50/50</h3>
+        </div>
+        <div class="card-body" style="font-size:13px; line-height:1.8; color:var(--ink2)">
+          <p>La propuesta reduce la participacion del TGN del <strong style="color:var(--ink)">74,645%</strong> al <strong style="color:var(--ink)">50%</strong> de la base coparticipable (Bs 48.433 MM, SIN 2025).</p>
+          <p style="margin-top:10px">El espacio liberado (<strong style="color:var(--ink)">24,645 p.p.</strong>) se distribuye entre:</p>
+          <ul style="margin:10px 0 0 18px; color:var(--ink2)">
+            <li><strong style="color:var(--gold)">Gobernaciones</strong> &mdash; porcentaje definido por el usuario, distribuido <em>per capita</em> entre los 9 departamentos</li>
+            <li><strong style="color:var(--red)">Fondo de Equidad</strong> &mdash; residuo automatico, distribuido entre 343 entidades (335 municipios + 8 GAIOCs) segun criterios ponderados</li>
+          </ul>
+          <p style="margin-top:10px">Los porcentajes fijos de <strong>municipios (20%)</strong> y <strong>universidades (5,355%)</strong> se mantienen segun normativa vigente.</p>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header">
+          <div class="card-icon card-icon-gold">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20V10M18 20V4M6 20v-4"/></svg>
+          </div>
+          <h3>Criterios de distribucion</h3>
+        </div>
+        <div class="card-body" style="font-size:13px; line-height:1.8; color:var(--ink2)">
+          <p>Cada entidad recibe una fraccion del Fondo de Equidad proporcional a su <strong style="color:var(--ink)">puntaje ponderado</strong>:</p>
+          <div style="background:var(--bg); border-radius:8px; padding:14px 16px; margin:12px 0; font-family:'IBM Plex Mono',monospace; font-size:12px; color:var(--g700)">
+            score = w<sub>1</sub> &times; pob + w<sub>2</sub> &times; area + w<sub>3</sub> &times; nbi + w<sub>4</sub> &times; frag
+          </div>
+          <p>Donde cada indicador se normaliza a [0, 1] con min-max y los pesos (w) son ajustables:</p>
+          <table style="width:100%; font-size:12px; margin-top:10px; border-collapse:collapse">
+            <tr style="border-bottom:1px solid var(--bg3)">
+              <td style="padding:6px 0"><strong style="color:var(--g600)">Poblacion</strong></td>
+              <td style="padding:6px 0; color:var(--mute)">Mas habitantes &rarr; mas recursos</td>
+              <td style="padding:6px 0; text-align:right; font-family:'IBM Plex Mono',monospace; color:var(--ink)">Proporcionalidad</td>
+            </tr>
+            <tr style="border-bottom:1px solid var(--bg3)">
+              <td style="padding:6px 0"><strong style="color:var(--g600)">Extension territorial</strong></td>
+              <td style="padding:6px 0; color:var(--mute)">Mayor area &rarr; mas recursos</td>
+              <td style="padding:6px 0; text-align:right; font-family:'IBM Plex Mono',monospace; color:var(--ink)">Territorial</td>
+            </tr>
+            <tr style="border-bottom:1px solid var(--bg3)">
+              <td style="padding:6px 0"><strong style="color:var(--gold)">NBI (pobreza)</strong></td>
+              <td style="padding:6px 0; color:var(--mute)">Mayor pobreza &rarr; mas recursos</td>
+              <td style="padding:6px 0; text-align:right; font-family:'IBM Plex Mono',monospace; color:var(--ink)">Redistributivo</td>
+            </tr>
+            <tr>
+              <td style="padding:6px 0"><strong style="color:var(--red)">Fragilidad fiscal</strong></td>
+              <td style="padding:6px 0; color:var(--mute)">Mayor dependencia &rarr; mas recursos</td>
+              <td style="padding:6px 0; text-align:right; font-family:'IBM Plex Mono',monospace; color:var(--ink)">Compensatorio</td>
+            </tr>
+          </table>
+        </div>
+      </div>
+    </div>
+    <div class="card" style="margin-top:20px">
+      <div class="card-header">
+        <div class="card-icon card-icon-green">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+        </div>
+        <h3>Fuentes de datos</h3>
+      </div>
+      <div class="card-body">
+        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(240px, 1fr)); gap:16px; font-size:12px; color:var(--ink2); line-height:1.7">
+          <div>
+            <div style="font-weight:600; color:var(--ink); margin-bottom:4px">Poblacion</div>
+            Instituto Nacional de Estadistica (INE)<br>Censo de Poblacion y Vivienda 2024
+          </div>
+          <div>
+            <div style="font-weight:600; color:var(--ink); margin-bottom:4px">Extension territorial</div>
+            Organo Electoral Plurinacional (OEP)<br>GeoJSON municipal 2025, reproyectado a UTM 20S
+          </div>
+          <div>
+            <div style="font-weight:600; color:var(--ink); margin-bottom:4px">NBI</div>
+            INE &mdash; Censo 2024<br>Metodo directo, % poblacion en situacion de pobreza
+          </div>
+          <div>
+            <div style="font-weight:600; color:var(--ink); margin-bottom:4px">Fragilidad fiscal</div>
+            Sistema de Gestion Publica (SIGEP)<br>% ingresos por transferencias, ultima gestion disponible
+          </div>
+          <div>
+            <div style="font-weight:600; color:var(--ink); margin-bottom:4px">Recaudacion tributaria</div>
+            Servicio de Impuestos Nacionales (SIN)<br>Base coparticipable ejecutada, gestion 2025
+          </div>
+          <div>
+            <div style="font-weight:600; color:var(--ink); margin-bottom:4px">Normativa</div>
+            Ley 1551 (Participacion Popular)<br>Ley 031 (Marco de Autonomias)
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<!-- Footer -->
+<footer class="site-footer">
+  <div class="footer-inner">
+    <h4>Fuentes</h4>
+    <p>
+      Recaudacion tributaria: Servicio de Impuestos Nacionales (SIN), gestion 2025.<br>
+      Poblacion: Instituto Nacional de Estadistica (INE), Censo de Poblacion y Vivienda 2024.<br>
+      Fragilidad fiscal: Sistema de Gestion Publica (SIGEP), ultima gestion disponible.<br>
+      GeoJSON: Organo Electoral Plurinacional (OEP), delimitacion 2025 simplificada.
+    </p>
+    <div class="footer-credit">
+      <span>Centro de Estudios POPULI &mdash; Observatorio de Finanzas Publicas y Desarrollo Territorial</span>
+      <span>2025</span>
+    </div>
+  </div>
+</footer>
+
+<script>
+/* ============================================================
+   SIMULADOR DE COPARTICIPACION TRIBUTARIA — MODELO 50/50
+   Observatorio de Finanzas Publicas y Desarrollo Territorial
+   ============================================================ */
+
+(function () {
+  'use strict';
+
+  /* ── Constants ── */
+  const BASE_COP = 48433318219.503;
+  const PCT_TGN_ACTUAL = 74.645;
+  const PCT_MUN = 20.0;
+  const PCT_UNI = 5.355;
+  const PCT_GOB_ACTUAL = 0.0;
+  const PCT_TGN_NEW = 50.0;
+  const AVAILABLE_SPACE = 24.645;
+
+  const DEPT_NAMES = [
+    'CHUQUISACA', 'LA PAZ', 'COCHABAMBA', 'ORURO',
+    'POTOSI', 'TARIJA', 'SANTA CRUZ', 'BENI', 'PANDO'
+  ];
+
+  const DEPT_COLORS = {
+    'CHUQUISACA': '#6b8e23', 'LA PAZ': '#2e86de', 'COCHABAMBA': '#e67e22',
+    'ORURO': '#8e44ad', 'POTOSI': '#c0392b', 'TARIJA': '#27ae60',
+    'SANTA CRUZ': '#f39c12', 'BENI': '#16a085', 'PANDO': '#2c3e50'
+  };
+
+  /* ── Formatters ── */
+  const fmtBs = (v) => {
+    if (v == null || isNaN(v)) return 'N/D';
+    return 'Bs ' + v.toLocaleString('es-BO', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+  };
+  const fmtBsMM = (v) => {
+    if (v == null || isNaN(v)) return 'N/D';
+    const mm = v / 1e6;
+    return 'Bs ' + mm.toLocaleString('es-BO', { minimumFractionDigits: 0, maximumFractionDigits: 0 }) + ' MM';
+  };
+  const fmtPct = (v, dec = 3) => {
+    if (v == null || isNaN(v)) return 'N/D';
+    return v.toLocaleString('es-BO', { minimumFractionDigits: dec, maximumFractionDigits: dec }) + '%';
+  };
+  const fmtNum = (v, dec = 0) => {
+    if (v == null || isNaN(v)) return 'N/D';
+    return v.toLocaleString('es-BO', { minimumFractionDigits: dec, maximumFractionDigits: dec });
+  };
+  const fmtBsShort = (v) => {
+    if (v == null || isNaN(v)) return 'N/D';
+    if (Math.abs(v) >= 1e9) return 'Bs ' + (v / 1e9).toLocaleString('es-BO', { minimumFractionDigits: 1, maximumFractionDigits: 1 }) + ' mil MM';
+    if (Math.abs(v) >= 1e6) return 'Bs ' + (v / 1e6).toLocaleString('es-BO', { minimumFractionDigits: 0, maximumFractionDigits: 0 }) + ' MM';
+    return fmtBs(v);
+  };
+
+  /* ── State ── */
+  let entities = [];
+  let geoData = null;
+  let gobPct = 0;
+  let weights = { pop: 40, area: 15, nbi: 30, frag: 15 };
+  let medians = {};
+  let deptChart = null;
+  let leafletMap = null;
+  let geoLayer = null;
+  let updateTimeout = null;
+
+  /* ── DOM refs ── */
+  const $ = (sel) => document.querySelector(sel);
+  const $$ = (sel) => document.querySelectorAll(sel);
+
+  /* ── Theme toggle ── */
+  function initTheme() {
+    const saved = localStorage.getItem('ofpdt-theme');
+    if (saved === 'dark') document.documentElement.setAttribute('data-theme', 'dark');
+    $('#themeToggle').addEventListener('click', () => {
+      const current = document.documentElement.getAttribute('data-theme');
+      const next = current === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', next === 'light' ? '' : 'dark');
+      localStorage.setItem('ofpdt-theme', next);
+    });
+  }
+
+  /* ── Data loading ── */
+  async function loadData() {
+    const [entResp, geoResp] = await Promise.all([
+      fetch('data/entidades_simulador.json'),
+      fetch('data/municipios_sim.geojson')
+    ]);
+    const entJson = await entResp.json();
+    entities = entJson.entidades;
+    geoData = await geoResp.json();
+
+    // Compute medians for missing data imputation
+    computeMedians();
+    // Impute missing values
+    imputeMissing();
+    // Populate department filter
+    populateDeptFilter();
+
+    return true;
+  }
+
+  function computeMedians() {
+    const fields = ['poblacion', 'area_km2', 'nbi_pobre', 'fragilidad_fiscal'];
+    fields.forEach(f => {
+      const vals = entities.map(e => e[f]).filter(v => v != null && !isNaN(v)).sort((a, b) => a - b);
+      const mid = Math.floor(vals.length / 2);
+      medians[f] = vals.length % 2 === 0 ? (vals[mid - 1] + vals[mid]) / 2 : vals[mid];
+    });
+  }
+
+  function imputeMissing() {
+    entities.forEach(e => {
+      if (e.poblacion == null || isNaN(e.poblacion)) e.poblacion = medians.poblacion;
+      if (e.area_km2 == null || isNaN(e.area_km2)) e.area_km2 = medians.area_km2;
+      if (e.nbi_pobre == null || isNaN(e.nbi_pobre)) e.nbi_pobre = medians.nbi_pobre;
+      if (e.fragilidad_fiscal == null || isNaN(e.fragilidad_fiscal)) e.fragilidad_fiscal = medians.fragilidad_fiscal;
+    });
+  }
+
+  function populateDeptFilter() {
+    const sel = $('#rankDeptFilter');
+    DEPT_NAMES.forEach(d => {
+      const opt = document.createElement('option');
+      opt.value = d;
+      opt.textContent = d.charAt(0) + d.slice(1).toLowerCase().replace(/ [a-z]/g, m => m.toUpperCase());
+      sel.appendChild(opt);
+    });
+  }
+
+  /* ── Fiscal calculations ── */
+  function calculate() {
+    const fondoPct = AVAILABLE_SPACE - gobPct;
+    const tgnBs = BASE_COP * (PCT_TGN_NEW / 100);
+    const munBs = BASE_COP * (PCT_MUN / 100);
+    const uniBs = BASE_COP * (PCT_UNI / 100);
+    const gobBs = BASE_COP * (gobPct / 100);
+    const fondoBs = BASE_COP * (fondoPct / 100);
+
+    // Department populations
+    const deptPops = {};
+    DEPT_NAMES.forEach(d => { deptPops[d] = 0; });
+    entities.forEach(e => {
+      const dept = e.dpto.toUpperCase();
+      if (deptPops[dept] !== undefined) deptPops[dept] += e.poblacion;
+    });
+    const totalPop = Object.values(deptPops).reduce((s, v) => s + v, 0);
+
+    // Gobernaciones per department (per capita)
+    const gobByDept = {};
+    DEPT_NAMES.forEach(d => {
+      gobByDept[d] = totalPop > 0 ? gobBs * (deptPops[d] / totalPop) : 0;
+    });
+
+    // Fondo de Equidad - normalize indicators
+    const w = {
+      pop: weights.pop / 100,
+      area: weights.area / 100,
+      nbi: weights.nbi / 100,
+      frag: weights.frag / 100
+    };
+
+    const vals = {
+      pop: entities.map(e => e.poblacion),
+      area: entities.map(e => e.area_km2),
+      nbi: entities.map(e => e.nbi_pobre),
+      frag: entities.map(e => e.fragilidad_fiscal)
+    };
+
+    const minMax = {};
+    ['pop', 'area', 'nbi', 'frag'].forEach(k => {
+      const arr = vals[k];
+      minMax[k] = { min: Math.min(...arr), max: Math.max(...arr) };
+    });
+
+    // Compute scores
+    const scores = entities.map((e, i) => {
+      const norm = {};
+      ['pop', 'area', 'nbi', 'frag'].forEach(k => {
+        const range = minMax[k].max - minMax[k].min;
+        norm[k] = range > 0 ? (vals[k][i] - minMax[k].min) / range : 0;
+      });
+      return w.pop * norm.pop + w.area * norm.area + w.nbi * norm.nbi + w.frag * norm.frag;
+    });
+
+    const totalScore = scores.reduce((s, v) => s + v, 0);
+
+    // Allocate fondo
+    const fondoByEntity = scores.map(s => totalScore > 0 ? (s / totalScore) * fondoBs : 0);
+
+    // Attach results to entities
+    entities.forEach((e, i) => {
+      e._fondoBs = fondoByEntity[i];
+      e._fondoPC = e.poblacion > 0 ? fondoByEntity[i] / e.poblacion : 0;
+      e._score = scores[i];
+    });
+
+    // Fondo aggregated by department
+    const fondoByDept = {};
+    DEPT_NAMES.forEach(d => { fondoByDept[d] = 0; });
+    entities.forEach(e => {
+      const dept = e.dpto.toUpperCase();
+      if (fondoByDept[dept] !== undefined) fondoByDept[dept] += e._fondoBs;
+    });
+
+    return {
+      tgnBs, munBs, uniBs, gobBs, fondoBs, fondoPct,
+      deptPops, totalPop, gobByDept, fondoByDept, fondoByEntity
+    };
+  }
+
+  /* ── UI Updates ── */
+  function updateUI() {
+    const r = calculate();
+    const fondoPct = AVAILABLE_SPACE - gobPct;
+
+    // KPI pills
+    $('#kpiGob').textContent = fmtPct(gobPct);
+    $('#kpiGobBs').textContent = fmtBsMM(r.gobBs);
+    $('#kpiFondo').textContent = fmtPct(fondoPct);
+    $('#kpiFondoBs').textContent = fmtBsMM(r.fondoBs);
+
+    // Sidebar labels
+    $('#lblGobPct').textContent = fmtPct(gobPct, 1);
+    $('#lblGobBs').textContent = fmtBsShort(r.gobBs);
+    $('#lblFondoPct').textContent = fmtPct(fondoPct);
+    $('#lblFondoBs').textContent = fmtBsShort(r.fondoBs);
+    $('#lblWPop').textContent = weights.pop + '%';
+    $('#lblWArea').textContent = weights.area + '%';
+    $('#lblWNbi').textContent = weights.nbi + '%';
+    $('#lblWFrag').textContent = weights.frag + '%';
+
+    // Weights bar
+    $('#wbPop').style.flex = weights.pop;
+    $('#wbArea').style.flex = weights.area;
+    $('#wbNbi').style.flex = weights.nbi;
+    $('#wbFrag').style.flex = weights.frag;
+
+    // Summary table
+    updateSummaryTable(r);
+
+    // Split bar
+    updateSplitBar(r);
+
+    // Department table + chart
+    updateDeptTable(r);
+    updateDeptChart(r);
+
+    // Map
+    updateMap();
+
+    // Ranking table
+    updateRanking();
+  }
+
+  function updateSummaryTable(r) {
+    const fondoPct = AVAILABLE_SPACE - gobPct;
+    const actual = {
+      tgn: BASE_COP * (PCT_TGN_ACTUAL / 100),
+      mun: BASE_COP * (PCT_MUN / 100),
+      uni: BASE_COP * (PCT_UNI / 100),
+      gob: BASE_COP * (PCT_GOB_ACTUAL / 100)
+    };
+    actual.fondo = 0;
+
+    const rows = [
+      { name: 'TGN', color: 'var(--navy)', pct: PCT_TGN_NEW, bs: r.tgnBs, delta: r.tgnBs - actual.tgn },
+      { name: 'Municipios (20%)', color: 'var(--g600)', pct: PCT_MUN, bs: r.munBs, delta: r.munBs - actual.mun },
+      { name: 'Universidades', color: 'var(--g400)', pct: PCT_UNI, bs: r.uniBs, delta: r.uniBs - actual.uni },
+      { name: 'Gobernaciones', color: 'var(--gold)', pct: gobPct, bs: r.gobBs, delta: r.gobBs - actual.gob },
+      { name: 'Fondo de Equidad', color: 'var(--red)', pct: fondoPct, bs: r.fondoBs, delta: r.fondoBs - actual.fondo }
+    ];
+
+    const tbody = $('#summaryTable tbody');
+    tbody.innerHTML = '';
+
+    rows.forEach(row => {
+      const tr = document.createElement('tr');
+      const deltaClass = row.delta > 0 ? 'delta-pos' : row.delta < 0 ? 'delta-neg' : 'delta-zero';
+      const deltaSign = row.delta > 0 ? '+' : '';
+      tr.innerHTML = `
+        <td><span class="receptor-dot" style="background:${row.color}"></span>${row.name}</td>
+        <td class="num mono">${fmtPct(row.pct)}</td>
+        <td class="num mono">${fmtBsMM(row.bs)}</td>
+        <td class="num mono ${deltaClass}">${deltaSign}${fmtBsMM(row.delta)}</td>
+      `;
+      tbody.appendChild(tr);
+    });
+
+    // Total row
+    const totalTr = document.createElement('tr');
+    totalTr.className = 'row-total';
+    totalTr.innerHTML = `
+      <td>Total</td>
+      <td class="num mono">100,000%</td>
+      <td class="num mono">${fmtBsMM(BASE_COP)}</td>
+      <td class="num mono delta-zero">Bs 0 MM</td>
+    `;
+    tbody.appendChild(totalTr);
+  }
+
+  function updateSplitBar(r) {
+    const fondoPct = AVAILABLE_SPACE - gobPct;
+    const bar = $('#splitBar');
+    const segs = bar.children;
+    segs[0].style.flex = PCT_TGN_NEW;
+    segs[0].textContent = PCT_TGN_NEW > 8 ? 'TGN ' + fmtPct(PCT_TGN_NEW, 0) : '';
+    segs[1].style.flex = PCT_MUN;
+    segs[1].textContent = PCT_MUN > 5 ? 'Mun ' + fmtPct(PCT_MUN, 0) : '';
+    segs[2].style.flex = PCT_UNI;
+    segs[2].textContent = PCT_UNI > 3 ? fmtPct(PCT_UNI, 1) : '';
+    segs[3].style.flex = gobPct;
+    segs[3].textContent = gobPct > 3 ? 'Gob ' + fmtPct(gobPct, 1) : '';
+    segs[4].style.flex = fondoPct;
+    segs[4].textContent = fondoPct > 3 ? 'Fondo ' + fmtPct(fondoPct, 1) : '';
+  }
+
+  function updateDeptTable(r) {
+    const tbody = $('#deptTable tbody');
+    tbody.innerHTML = '';
+
+    let totalGob = 0, totalFondo = 0, totalTotal = 0;
+
+    DEPT_NAMES.forEach(d => {
+      const pop = r.deptPops[d];
+      const gob = r.gobByDept[d];
+      const fondo = r.fondoByDept[d];
+      const total = gob + fondo;
+      const pc = pop > 0 ? total / pop : 0;
+      totalGob += gob; totalFondo += fondo; totalTotal += total;
+
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td>${d.charAt(0) + d.slice(1).toLowerCase().replace(/ [a-z]/g, m => m.toUpperCase())}</td>
+        <td class="num">${fmtNum(pop)}</td>
+        <td class="num">${fmtBsShort(gob)}</td>
+        <td class="num">${fmtBsShort(fondo)}</td>
+        <td class="num">${fmtBsShort(total)}</td>
+        <td class="num">${fmtNum(pc, 0)}</td>
+      `;
+      tbody.appendChild(tr);
+    });
+
+    // Total
+    const trT = document.createElement('tr');
+    trT.innerHTML = `
+      <td>Total</td>
+      <td class="num">${fmtNum(r.totalPop)}</td>
+      <td class="num">${fmtBsShort(totalGob)}</td>
+      <td class="num">${fmtBsShort(totalFondo)}</td>
+      <td class="num">${fmtBsShort(totalTotal)}</td>
+      <td class="num">${fmtNum(r.totalPop > 0 ? totalTotal / r.totalPop : 0, 0)}</td>
+    `;
+    tbody.appendChild(trT);
+  }
+
+  function updateDeptChart(r) {
+    const labels = DEPT_NAMES.map(d => d.charAt(0) + d.slice(1).toLowerCase().replace(/ [a-z]/g, m => m.toUpperCase()));
+    const gobData = DEPT_NAMES.map(d => r.gobByDept[d] / 1e6);
+    const fondoData = DEPT_NAMES.map(d => r.fondoByDept[d] / 1e6);
+
+    const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+    const gridColor = isDark ? 'rgba(255,255,255,.08)' : 'rgba(0,0,0,.06)';
+    const textColor = isDark ? '#a0b0a4' : '#5a4d3e';
+
+    if (deptChart) {
+      deptChart.data.labels = labels;
+      deptChart.data.datasets[0].data = gobData;
+      deptChart.data.datasets[1].data = fondoData;
+      deptChart.options.scales.x.ticks.color = textColor;
+      deptChart.options.scales.y.ticks.color = textColor;
+      deptChart.options.scales.x.grid.color = gridColor;
+      deptChart.options.scales.y.grid.color = gridColor;
+      deptChart.update('none');
+      return;
+    }
+
+    const ctx = $('#deptChart').getContext('2d');
+    deptChart = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels,
+        datasets: [
+          { label: 'Gobernacion (Bs MM)', data: gobData, backgroundColor: '#d4a017', borderRadius: 3, barPercentage: 0.7 },
+          { label: 'Fondo de Equidad (Bs MM)', data: fondoData, backgroundColor: '#c71e1d', borderRadius: 3, barPercentage: 0.7 }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        interaction: { mode: 'index', intersect: false },
+        plugins: {
+          legend: {
+            position: 'top',
+            labels: { font: { family: "'IBM Plex Sans'", size: 11 }, color: textColor, boxWidth: 12, padding: 16 }
+          },
+          tooltip: {
+            backgroundColor: isDark ? '#1a2a1e' : '#fff',
+            titleColor: isDark ? '#d8e0da' : '#2a2016',
+            bodyColor: isDark ? '#a0b0a4' : '#5a4d3e',
+            borderColor: isDark ? '#243028' : '#e2dccf',
+            borderWidth: 1,
+            titleFont: { family: "'IBM Plex Sans'", weight: '600' },
+            bodyFont: { family: "'IBM Plex Mono'" },
+            padding: 12,
+            callbacks: {
+              label: (ctx) => ctx.dataset.label + ': Bs ' + ctx.parsed.y.toLocaleString('es-BO', { maximumFractionDigits: 0 }) + ' MM'
+            }
+          }
+        },
+        scales: {
+          x: {
+            stacked: true,
+            grid: { display: false },
+            ticks: { font: { family: "'IBM Plex Sans'", size: 11 }, color: textColor }
+          },
+          y: {
+            stacked: true,
+            grid: { color: gridColor },
+            ticks: {
+              font: { family: "'IBM Plex Mono'", size: 11 }, color: textColor,
+              callback: (v) => 'Bs ' + v.toLocaleString('es-BO') + ' MM'
+            }
+          }
+        }
+      }
+    });
+  }
+
+  /* ── Map ── */
+  function initMap() {
+    leafletMap = L.map('sim-map', {
+      center: [-16.5, -64.0],
+      zoom: 6,
+      zoomControl: true,
+      attributionControl: false
+    });
+
+    // Tile layer - use a neutral light tile
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}{r}.png', {
+      subdomains: 'abcd',
+      maxZoom: 12
+    }).addTo(leafletMap);
+
+    updateMap();
+  }
+
+  function getColorScale(val, min, max) {
+    if (val == null || isNaN(val)) return '#cccccc';
+    const t = max > min ? (val - min) / (max - min) : 0;
+    // Green sequential: light -> dark
+    const colors = [
+      [232, 247, 238],  // g50
+      [199, 235, 209],  // g100
+      [153, 214, 173],  // g200
+      [102, 192, 136],  // g300
+      [60, 168, 104],   // g400
+      [39, 134, 79],    // g500
+      [30, 107, 66],    // g600
+      [22, 80, 49],     // g700
+      [15, 53, 32]      // g800
+    ];
+    const idx = Math.min(Math.floor(t * (colors.length - 1)), colors.length - 2);
+    const frac = t * (colors.length - 1) - idx;
+    const c0 = colors[idx], c1 = colors[idx + 1];
+    const r = Math.round(c0[0] + (c1[0] - c0[0]) * frac);
+    const g = Math.round(c0[1] + (c1[1] - c0[1]) * frac);
+    const b = Math.round(c0[2] + (c1[2] - c0[2]) * frac);
+    return `rgb(${r},${g},${b})`;
+  }
+
+  function updateMap() {
+    if (!leafletMap || !geoData) return;
+
+    // Build lookup: sigep -> entity
+    const lookup = {};
+    entities.forEach(e => { lookup[e.sigep] = e; });
+
+    // Get per capita range
+    const pcVals = entities.filter(e => e._fondoPC > 0).map(e => e._fondoPC);
+    const pcMin = pcVals.length > 0 ? Math.min(...pcVals) : 0;
+    const pcMax = pcVals.length > 0 ? Math.max(...pcVals) : 1;
+
+    if (geoLayer) {
+      leafletMap.removeLayer(geoLayer);
+    }
+
+    geoLayer = L.geoJSON(geoData, {
+      style: (feature) => {
+        const sigep = feature.properties.s;
+        const ent = lookup[sigep];
+        const pc = ent ? ent._fondoPC : 0;
+        return {
+          fillColor: getColorScale(pc, pcMin, pcMax),
+          weight: 0.5,
+          opacity: 0.8,
+          color: '#ffffff',
+          fillOpacity: 0.85
+        };
+      },
+      onEachFeature: (feature, layer) => {
+        const sigep = feature.properties.s;
+        const ent = lookup[sigep];
+        const name = feature.properties.n || (ent ? ent.nombre : 'Desconocido');
+        const dept = feature.properties.d || (ent ? ent.dpto : '');
+
+        layer.on('mouseover', function (e) {
+          this.setStyle({ weight: 2, color: '#fdf1cc', fillOpacity: 0.95 });
+          this.bringToFront();
+        });
+        layer.on('mouseout', function (e) {
+          geoLayer.resetStyle(this);
+        });
+
+        if (ent) {
+          const ttContent = `
+            <div class="tt-name">${name}</div>
+            <div class="tt-dept">${dept}</div>
+            <div class="tt-row"><span class="tt-label">Poblacion</span><span class="tt-val">${fmtNum(ent.poblacion)}</span></div>
+            <div class="tt-row"><span class="tt-label">Area km&sup2;</span><span class="tt-val">${fmtNum(ent.area_km2, 1)}</span></div>
+            <div class="tt-row"><span class="tt-label">NBI</span><span class="tt-val">${fmtPct(ent.nbi_pobre, 1)}</span></div>
+            <div class="tt-row"><span class="tt-label">Fragilidad</span><span class="tt-val">${fmtPct(ent.fragilidad_fiscal, 1)}</span></div>
+            <div class="tt-highlight">
+              <div class="tt-row"><span class="tt-label">Fondo asignado</span><span class="tt-val">${fmtBsShort(ent._fondoBs)}</span></div>
+              <div class="tt-row"><span class="tt-label">Per capita</span><span class="tt-val">${fmtBs(ent._fondoPC)}</span></div>
+            </div>
+          `;
+          layer.bindTooltip(ttContent, {
+            className: 'entity-tooltip',
+            direction: 'auto',
+            sticky: true
+          });
+        } else {
+          layer.bindTooltip(`<div class="tt-name">${name}</div><div class="tt-dept">${dept}</div><div style="color:#8a7d6e;font-size:11px">Sin datos</div>`, {
+            className: 'entity-tooltip',
+            direction: 'auto',
+            sticky: true
+          });
+        }
+      }
+    }).addTo(leafletMap);
+
+    // Update legend
+    updateMapLegend(pcMin, pcMax);
+  }
+
+  function updateMapLegend(min, max) {
+    const legend = $('#mapLegend');
+    const steps = 6;
+    let html = '<div class="leg-title">Fondo per capita (Bs)</div>';
+    for (let i = steps; i >= 0; i--) {
+      const val = min + (max - min) * (i / steps);
+      const color = getColorScale(val, min, max);
+      html += `<div class="leg-row"><div class="leg-swatch" style="background:${color}"></div><span class="mono" style="font-size:11px">${fmtNum(val, 0)}</span></div>`;
+    }
+    legend.innerHTML = html;
+  }
+
+  /* ── Ranking ── */
+  let rankSort = { col: 'fondo', dir: 'desc' };
+  let rankSearch = '';
+  let rankDept = '';
+
+  function updateRanking() {
+    let filtered = [...entities];
+
+    // Filter by dept
+    if (rankDept) {
+      filtered = filtered.filter(e => e.dpto.toUpperCase() === rankDept);
+    }
+    // Filter by search
+    if (rankSearch) {
+      const q = rankSearch.toLowerCase();
+      filtered = filtered.filter(e => e.nombre.toLowerCase().includes(q));
+    }
+
+    // Sort
+    const col = rankSort.col;
+    const dir = rankSort.dir === 'asc' ? 1 : -1;
+    filtered.sort((a, b) => {
+      let va, vb;
+      switch (col) {
+        case 'nombre': va = a.nombre.toLowerCase(); vb = b.nombre.toLowerCase(); return va < vb ? -dir : va > vb ? dir : 0;
+        case 'dpto': va = a.dpto; vb = b.dpto; return va < vb ? -dir : va > vb ? dir : 0;
+        case 'tipo': va = a.tipo; vb = b.tipo; return va < vb ? -dir : va > vb ? dir : 0;
+        case 'poblacion': return (a.poblacion - b.poblacion) * dir;
+        case 'area': return (a.area_km2 - b.area_km2) * dir;
+        case 'nbi': return (a.nbi_pobre - b.nbi_pobre) * dir;
+        case 'frag': return (a.fragilidad_fiscal - b.fragilidad_fiscal) * dir;
+        case 'fondo': return (a._fondoBs - b._fondoBs) * dir;
+        case 'percapita': return (a._fondoPC - b._fondoPC) * dir;
+        case 'rank': return (a._fondoPC - b._fondoPC) * dir;
+        default: return 0;
+      }
+    });
+
+    // Determine top10 / bottom10 by per capita across all entities
+    const allSorted = [...entities].sort((a, b) => b._fondoPC - a._fondoPC);
+    const top10Sigeps = new Set(allSorted.slice(0, 10).map(e => e.sigep));
+    const bottom10Sigeps = new Set(allSorted.slice(-10).map(e => e.sigep));
+
+    const tbody = $('#rankingTable tbody');
+    tbody.innerHTML = '';
+
+    filtered.forEach((e, i) => {
+      const tr = document.createElement('tr');
+      if (top10Sigeps.has(e.sigep)) tr.className = 'top10';
+      if (bottom10Sigeps.has(e.sigep)) tr.className = 'bottom10';
+
+      const tipoBadge = e.tipo === 'GAIOC'
+        ? '<span class="badge badge-gaioc">GAIOC</span>'
+        : '<span class="badge badge-mun">Mun</span>';
+
+      tr.innerHTML = `
+        <td class="num mono">${i + 1}</td>
+        <td>${e.nombre}${e.tipo === 'GAIOC' ? tipoBadge : ''}</td>
+        <td>${e.dpto.charAt(0) + e.dpto.slice(1).toLowerCase().replace(/ [a-z]/g, m => m.toUpperCase())}</td>
+        <td>${e.tipo === 'GAIOC' ? tipoBadge : '<span class="badge badge-mun">Mun</span>'}</td>
+        <td class="num">${fmtNum(e.poblacion)}</td>
+        <td class="num">${fmtNum(e.area_km2, 1)}</td>
+        <td class="num">${fmtPct(e.nbi_pobre, 1)}</td>
+        <td class="num">${fmtPct(e.fragilidad_fiscal, 1)}</td>
+        <td class="num">${fmtBsShort(e._fondoBs)}</td>
+        <td class="num">${fmtBs(e._fondoPC)}</td>
+      `;
+      tbody.appendChild(tr);
+    });
+
+    $('#rankingCount').textContent = `Mostrando ${filtered.length} de ${entities.length} entidades`;
+
+    // Update sort arrows
+    $$('#rankingTable th').forEach(th => {
+      th.classList.remove('sorted');
+      const arrow = th.querySelector('.sort-arrow');
+      if (arrow) arrow.textContent = '▲';
+    });
+    const activeCol = $(`#rankingTable th[data-col="${rankSort.col}"]`);
+    if (activeCol) {
+      activeCol.classList.add('sorted');
+      const arrow = activeCol.querySelector('.sort-arrow');
+      if (arrow) arrow.textContent = rankSort.dir === 'asc' ? '▲' : '▼';
+    }
+  }
+
+  /* ── Slider handlers ── */
+  function initSliders() {
+    const sliderGob = $('#sliderGob');
+
+    sliderGob.addEventListener('input', () => {
+      gobPct = parseFloat(sliderGob.value);
+      scheduleUpdate();
+    });
+
+    // Weight sliders — redistribute to always sum 100
+    const weightSliders = {
+      pop: $('#sliderWPop'),
+      area: $('#sliderWArea'),
+      nbi: $('#sliderWNbi'),
+      frag: $('#sliderWFrag')
+    };
+
+    Object.entries(weightSliders).forEach(([key, slider]) => {
+      slider.addEventListener('input', () => {
+        const newVal = parseInt(slider.value);
+        const oldVal = weights[key];
+        const diff = newVal - oldVal;
+        weights[key] = newVal;
+
+        // Redistribute diff among others proportionally
+        const otherKeys = Object.keys(weights).filter(k => k !== key);
+        const otherSum = otherKeys.reduce((s, k) => s + weights[k], 0);
+
+        if (otherSum > 0) {
+          let remaining = -diff;
+          otherKeys.forEach((k, i) => {
+            if (i === otherKeys.length - 1) {
+              weights[k] = Math.max(0, weights[k] + remaining);
+            } else {
+              const share = Math.round(remaining * (weights[k] / otherSum));
+              weights[k] = Math.max(0, weights[k] + share);
+              remaining -= share;
+            }
+          });
+        }
+
+        // Ensure sum is exactly 100
+        const sum = Object.values(weights).reduce((s, v) => s + v, 0);
+        if (sum !== 100) {
+          const fixKey = otherKeys.find(k => weights[k] > 0) || otherKeys[0];
+          weights[fixKey] += (100 - sum);
+          weights[fixKey] = Math.max(0, weights[fixKey]);
+        }
+
+        // Sync slider values
+        Object.entries(weightSliders).forEach(([k, sl]) => {
+          sl.value = weights[k];
+        });
+
+        scheduleUpdate();
+      });
+    });
+
+    // Ranking controls
+    $('#rankSearch').addEventListener('input', (e) => {
+      rankSearch = e.target.value;
+      updateRanking();
+    });
+    $('#rankDeptFilter').addEventListener('change', (e) => {
+      rankDept = e.target.value;
+      updateRanking();
+    });
+
+    // Ranking sort headers
+    $$('#rankingTable th[data-col]').forEach(th => {
+      th.addEventListener('click', () => {
+        const col = th.dataset.col;
+        if (rankSort.col === col) {
+          rankSort.dir = rankSort.dir === 'asc' ? 'desc' : 'asc';
+        } else {
+          rankSort.col = col;
+          rankSort.dir = col === 'nombre' || col === 'dpto' || col === 'tipo' ? 'asc' : 'desc';
+        }
+        updateRanking();
+      });
+    });
+  }
+
+  function scheduleUpdate() {
+    if (updateTimeout) cancelAnimationFrame(updateTimeout);
+    updateTimeout = requestAnimationFrame(updateUI);
+  }
+
+  /* ── Init ── */
+  async function init() {
+    initTheme();
+    try {
+      await loadData();
+      initSliders();
+      updateUI();
+      initMap();
+      setTimeout(() => {
+        $('#loadingOverlay').classList.add('hidden');
+        setTimeout(() => { $('#loadingOverlay').style.display = 'none'; }, 500);
+      }, 300);
+    } catch (err) {
+      console.error('Error loading simulator:', err);
+      $('#loadingOverlay').querySelector('.loading-text').textContent = 'Error al cargar datos. Verifique la consola.';
+      $('#loadingOverlay').querySelector('.loading-spinner').style.display = 'none';
+    }
+  }
+
+  // Theme observer for chart recolor
+  const themeObserver = new MutationObserver(() => {
+    if (deptChart) {
+      const r = calculate();
+      updateDeptChart(r);
+    }
+  });
+  themeObserver.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+})();
+</script>
+</body>
+</html>
