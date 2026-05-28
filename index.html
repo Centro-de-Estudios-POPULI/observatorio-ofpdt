@@ -1,0 +1,2013 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OFPDT — Observatorio de Finanzas Públicas y Desarrollo Territorial</title>
+<meta name="description" content="Plataforma de datos abiertos para el análisis fiscal, censal y electoral de Bolivia. Dashboards interactivos con información verificable del SIGEP, INE y TSE.">
+<meta name="theme-color" content="#0a1f14">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%230d3320'/%3E%3Cpolygon points='16,3 26,6 30,14 28,23 21,29 11,29 4,23 2,14 6,6' fill='none' stroke='%236fcf8e' stroke-width='1.5' stroke-linejoin='round'/%3E%3Cpolygon points='19,6 27,11 27,20 22,26 14,27 8,23 6,16 8,9 14,6' fill='none' stroke='%236fcf8e' stroke-width='1' stroke-linejoin='round' opacity='.5'/%3E%3C/svg%3E">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&family=IBM+Plex+Sans:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --g900: #071a0f;
+  --g800: #0a2618;
+  --g700: #0d3320;
+  --g600: #13472d;
+  --g500: #1d5938;
+  --g400: #278a52;
+  --g300: #34a865;
+  --g200: #6fcf8e;
+  --g100: #c1ecd0;
+  --g50:  #e8f7ee;
+  --gold: #c4921c;
+  --gold-light: #dab44e;
+  --gold-pale: #fdf3d7;
+  --red: #c71e1d;
+  --red-dark: #8f1514;
+  --blue: #1f6feb;
+  --blue-dark: #1556c0;
+  --navy: #162b50;
+  --navy-deep: #0d1b35;
+  --bg: #f5f1e8;
+  --bg2: #ede8db;
+  --bg3: #e2dccf;
+  --ink: #2a2016;
+  --ink2: #5a4d3e;
+  --mute: #8a7d6e;
+  --faint: #b5aa9a;
+  --white: #fdfaf4;
+  --shadow-sm: 0 1px 3px rgba(30,20,10,.06);
+  --shadow: 0 4px 16px rgba(30,20,10,.08);
+  --shadow-lg: 0 12px 40px rgba(30,20,10,.14);
+  --shadow-xl: 0 20px 60px rgba(30,20,10,.18);
+  --radius: 16px;
+  --radius-sm: 10px;
+  --max-w: 1200px;
+  --header-h: 72px;
+}
+
+/* ── Dark mode overrides ── */
+[data-theme="dark"] {
+  --bg: #121a14;
+  --bg2: #1a2a1e;
+  --bg3: #243028;
+  --ink: #d8e0da;
+  --ink2: #a0b0a4;
+  --mute: #7a8a7e;
+  --faint: #4a5a4e;
+  --white: #1a2a1e;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,.2);
+  --shadow: 0 4px 16px rgba(0,0,0,.25);
+  --shadow-lg: 0 12px 40px rgba(0,0,0,.35);
+  --shadow-xl: 0 20px 60px rgba(0,0,0,.45);
+}
+
+[data-theme="dark"] .institucional-wrap { background: var(--bg2); border-color: var(--bg3); }
+[data-theme="dark"] .inst-logo { background: var(--bg); border-color: var(--bg3); }
+[data-theme="dark"] .inst-logo img { filter: grayscale(.3) brightness(1.1); }
+[data-theme="dark"] .inst-logo:hover img { filter: grayscale(0) brightness(1.1); }
+[data-theme="dark"] .project-card { background: var(--bg2); border-color: var(--bg3); }
+[data-theme="dark"] .card-title { color: #e0ece4; }
+[data-theme="dark"] .card-icon--fiscal { background: rgba(29,89,56,.25); }
+[data-theme="dark"] .card-icon--departamental { background: rgba(199,30,29,.15); }
+[data-theme="dark"] .card-icon--censal { background: rgba(31,111,235,.15); }
+[data-theme="dark"] .card-icon--electoral { background: rgba(22,43,80,.2); }
+[data-theme="dark"] .card-tag--fiscal { background: rgba(29,89,56,.2); }
+[data-theme="dark"] .card-tag--departamental { background: rgba(199,30,29,.12); }
+[data-theme="dark"] .card-tag--censal { background: rgba(31,111,235,.12); }
+[data-theme="dark"] .card-tag--electoral { background: rgba(22,43,80,.15); }
+[data-theme="dark"] .card-metrics { border-color: var(--bg3); }
+[data-theme="dark"] .source-card { background: var(--bg2); border-color: var(--bg3); }
+[data-theme="dark"] .source-icon { background: rgba(29,89,56,.2); }
+[data-theme="dark"] .source-name { color: #c0d0c4; }
+[data-theme="dark"] .section-title { color: var(--g200); }
+[data-theme="dark"] .section-divider--beige svg { fill: var(--bg); }
+[data-theme="dark"] .section-divider--white svg { fill: var(--bg2); }
+
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--bg);
+  font-family: 'IBM Plex Sans', system-ui, -apple-system, sans-serif;
+  color: var(--ink);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+}
+
+::selection { background: var(--g200); color: var(--g900); }
+
+/* ═══════════════════════════════════════════════
+   HEADER — sticky, dynamic blur on scroll
+   ═══════════════════════════════════════════════ */
+
+.header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  height: var(--header-h);
+  transition: all .4s cubic-bezier(.22,.68,0,1);
+}
+
+.header::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(7,26,15,.0);
+  backdrop-filter: blur(0px);
+  -webkit-backdrop-filter: blur(0px);
+  transition: all .4s cubic-bezier(.22,.68,0,1);
+  border-bottom: 1px solid transparent;
+}
+
+.header.scrolled::before {
+  background: rgba(7,26,15,.85);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-bottom: 1px solid rgba(255,255,255,.06);
+}
+
+.header.scrolled { height: 60px; }
+
+.header-inner {
+  max-width: var(--max-w);
+  margin: 0 auto;
+  padding: 0 32px;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: relative;
+  z-index: 1;
+}
+
+.header-brand {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  text-decoration: none;
+}
+
+.header-logo-mark {
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, var(--g500), var(--g400));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Playfair Display', serif;
+  font-size: 18px;
+  font-weight: 700;
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(29,89,56,.3);
+  transition: transform .3s;
+  flex-shrink: 0;
+}
+
+.header-brand:hover .header-logo-mark { transform: scale(1.05); }
+
+.header-brand-text {
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: .78em;
+  font-weight: 600;
+  color: rgba(255,255,255,.9);
+  letter-spacing: .2px;
+  line-height: 1.2;
+}
+
+.header-brand-text span {
+  display: block;
+  font-weight: 400;
+  font-size: .85em;
+  color: rgba(255,255,255,.5);
+}
+
+.header-logo-svg {
+  flex-shrink: 0;
+  filter: drop-shadow(0 2px 6px rgba(29,89,56,.3));
+}
+
+.header-nav {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.header-nav a {
+  color: rgba(255,255,255,.65);
+  text-decoration: none;
+  font-size: .8em;
+  font-weight: 500;
+  padding: 8px 16px;
+  border-radius: 8px;
+  transition: all .25s;
+  position: relative;
+}
+
+.header-nav a:hover {
+  color: #fff;
+  background: rgba(255,255,255,.08);
+}
+
+.header-nav a.active {
+  color: var(--g200);
+}
+
+/* Theme toggle */
+.theme-toggle {
+  background: rgba(255,255,255,.08);
+  border: 1px solid rgba(255,255,255,.1);
+  color: rgba(255,255,255,.65);
+  padding: 7px;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all .25s;
+  margin-left: 4px;
+}
+
+.theme-toggle:hover { background: rgba(255,255,255,.14); color: #fff; }
+
+.theme-icon-moon { display: none; }
+[data-theme="dark"] .theme-icon-sun { display: none; }
+[data-theme="dark"] .theme-icon-moon { display: block; }
+
+.theme-toggle--mobile {
+  gap: 10px;
+  padding: 12px 24px;
+  margin-top: 16px;
+  font-size: .9em;
+}
+
+.theme-toggle--mobile span {
+  color: rgba(255,255,255,.6);
+  font-family: 'IBM Plex Sans', sans-serif;
+}
+
+.header-right-mobile {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.theme-toggle--compact { display: none; }
+
+.nav-toggle {
+  display: none;
+  background: none;
+  border: none;
+  color: rgba(255,255,255,.7);
+  padding: 8px;
+  cursor: pointer;
+  border-radius: 8px;
+  transition: background .2s;
+}
+
+.nav-toggle:hover { background: rgba(255,255,255,.1); }
+
+.nav-toggle svg { display: block; }
+
+/* ═══════════════════════════════════════════════
+   HERO — full-viewport with geometric bg
+   ═══════════════════════════════════════════════ */
+
+.hero {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(170deg, var(--g900) 0%, var(--g800) 30%, var(--g700) 60%, var(--g600) 100%);
+  padding: 120px 32px 80px;
+}
+
+/* Canvas particle background */
+.hero-canvas {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+}
+
+.hero-grid-bg {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(255,255,255,.02) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,.02) 1px, transparent 1px);
+  background-size: 60px 60px;
+  mask-image: radial-gradient(ellipse 80% 70% at 50% 50%, black 20%, transparent 70%);
+  -webkit-mask-image: radial-gradient(ellipse 80% 70% at 50% 50%, black 20%, transparent 70%);
+  z-index: 1;
+}
+
+/* Scroll progress bar */
+.scroll-progress {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--g400), var(--g200), var(--gold-light));
+  z-index: 150;
+  width: 0%;
+  transition: none;
+  box-shadow: 0 0 10px rgba(111,207,142,.4);
+}
+
+/* Section curved dividers */
+.section-divider {
+  position: relative;
+  margin-top: -1px;
+}
+
+.section-divider svg {
+  display: block;
+  width: 100%;
+  height: 60px;
+}
+
+.section-divider--beige svg { fill: var(--bg); }
+.section-divider--green svg { fill: var(--g800); }
+.section-divider--white svg { fill: var(--white); }
+
+.hero-content {
+  position: relative;
+  z-index: 1;
+  max-width: 820px;
+}
+
+.hero-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(52,168,101,.1);
+  border: 1px solid rgba(52,168,101,.2);
+  color: var(--g200);
+  font-size: .72em;
+  font-weight: 600;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  padding: 7px 20px;
+  border-radius: 24px;
+  margin-bottom: 28px;
+  backdrop-filter: blur(8px);
+}
+
+.hero-badge-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--g300);
+  animation: pulse-dot 2s ease-in-out infinite;
+}
+
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: .5; transform: scale(.7); }
+}
+
+.hero h1 {
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: clamp(2.2em, 5.5vw, 3.8em);
+  color: #fff;
+  font-weight: 700;
+  line-height: 1.1;
+  margin-bottom: 10px;
+  letter-spacing: -.01em;
+}
+
+.hero h1 em {
+  font-style: italic;
+  color: var(--g200);
+}
+
+/* Word reveal animation */
+.hero h1 .word {
+  display: inline-block;
+  opacity: 0;
+  transform: translateY(20px) rotateX(-15deg);
+  animation: word-reveal .6s cubic-bezier(.22,.68,0,1) forwards;
+}
+
+@keyframes word-reveal {
+  to { opacity: 1; transform: translateY(0) rotateX(0); }
+}
+
+/* 3D tilt perspective on cards */
+.tilt-wrap {
+  perspective: 800px;
+}
+
+.project-card {
+  transform-style: preserve-3d;
+  will-change: transform;
+}
+
+.card-body { transform: translateZ(0); }
+
+.hero-subtitle {
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: clamp(.95em, 1.5vw, 1.15em);
+  font-weight: 300;
+  color: rgba(255,255,255,.5);
+  letter-spacing: .5px;
+  margin-bottom: 28px;
+}
+
+.hero-desc {
+  max-width: 600px;
+  margin: 0 auto 48px;
+  font-size: 1.05em;
+  color: rgba(255,255,255,.6);
+  line-height: 1.75;
+}
+
+.hero-stats {
+  display: flex;
+  justify-content: center;
+  gap: 1px;
+  background: rgba(255,255,255,.06);
+  border-radius: 16px;
+  overflow: hidden;
+  border: 1px solid rgba(255,255,255,.06);
+}
+
+.hero-stat {
+  padding: 24px 36px;
+  text-align: center;
+  background: rgba(255,255,255,.02);
+  transition: background .3s;
+  flex: 1;
+  min-width: 120px;
+}
+
+.hero-stat:hover { background: rgba(255,255,255,.05); }
+
+.hero-stat-num {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 2em;
+  font-weight: 600;
+  color: #fff;
+  line-height: 1;
+  display: block;
+}
+
+.hero-stat-label {
+  font-size: .68em;
+  color: rgba(255,255,255,.4);
+  text-transform: uppercase;
+  letter-spacing: 1.2px;
+  margin-top: 6px;
+  display: block;
+}
+
+.hero-scroll-hint {
+  position: absolute;
+  bottom: 32px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  color: rgba(255,255,255,.25);
+  font-size: .7em;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  animation: scroll-hint 2.5s ease-in-out infinite;
+}
+
+.hero-scroll-hint svg { opacity: .4; }
+
+@keyframes scroll-hint {
+  0%, 100% { transform: translateX(-50%) translateY(0); }
+  50% { transform: translateX(-50%) translateY(6px); }
+}
+
+/* ═══════════════════════════════════════════════
+   SECTION COMMONS
+   ═══════════════════════════════════════════════ */
+
+.section {
+  max-width: var(--max-w);
+  margin: 0 auto;
+  padding: 96px 32px;
+}
+
+.section-header {
+  margin-bottom: 56px;
+}
+
+.section-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-size: .68em;
+  font-weight: 700;
+  letter-spacing: 2.5px;
+  text-transform: uppercase;
+  color: var(--g500);
+  margin-bottom: 12px;
+}
+
+.section-label::before {
+  content: '';
+  width: 24px;
+  height: 2px;
+  background: var(--g400);
+  border-radius: 1px;
+}
+
+.section-title {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(1.6em, 3vw, 2.2em);
+  font-weight: 700;
+  color: var(--g800);
+  margin-bottom: 14px;
+  line-height: 1.2;
+}
+
+.section-desc {
+  font-size: .95em;
+  color: var(--ink2);
+  max-width: 580px;
+  line-height: 1.75;
+}
+
+/* ═══════════════════════════════════════════════
+   REVEAL ANIMATION
+   ═══════════════════════════════════════════════ */
+
+.reveal {
+  opacity: 0;
+  transform: translateY(32px);
+  transition: opacity .7s cubic-bezier(.22,.68,0,1), transform .7s cubic-bezier(.22,.68,0,1);
+}
+
+.reveal.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.reveal-delay-1 { transition-delay: .1s; }
+.reveal-delay-2 { transition-delay: .2s; }
+.reveal-delay-3 { transition-delay: .3s; }
+.reveal-delay-4 { transition-delay: .4s; }
+
+/* ═══════════════════════════════════════════════
+   PROJECT CARDS
+   ═══════════════════════════════════════════════ */
+
+.projects-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 28px;
+}
+
+.project-card {
+  background: var(--white);
+  border: 1px solid var(--bg3);
+  border-radius: var(--radius);
+  overflow: hidden;
+  box-shadow: var(--shadow);
+  transition: all .4s cubic-bezier(.22,.68,0,1);
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+.project-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: var(--radius);
+  opacity: 0;
+  transition: opacity .4s;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.project-card:hover {
+  box-shadow: var(--shadow-xl);
+  transform: translateY(-6px);
+  border-color: transparent;
+}
+
+.project-card:hover::before { opacity: 1; }
+
+.card-accent {
+  height: 4px;
+  position: relative;
+  z-index: 2;
+}
+
+.card-accent--fiscal { background: linear-gradient(90deg, var(--g700), var(--g400), var(--g300)); }
+.card-accent--departamental { background: linear-gradient(90deg, var(--red-dark), var(--red), #e84948); }
+.card-accent--censal { background: linear-gradient(90deg, var(--blue-dark), var(--blue), #58a6ff); }
+.card-accent--electoral { background: linear-gradient(90deg, var(--navy-deep), var(--navy), #2a5aae); }
+
+.project-card--fiscal::before { box-shadow: inset 0 0 0 1px rgba(29,89,56,.15); }
+.project-card--departamental::before { box-shadow: inset 0 0 0 1px rgba(199,30,29,.12); }
+.project-card--censal::before { box-shadow: inset 0 0 0 1px rgba(31,111,235,.12); }
+.project-card--electoral::before { box-shadow: inset 0 0 0 1px rgba(22,43,80,.12); }
+
+.card-body {
+  padding: 32px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  z-index: 2;
+}
+
+.card-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.card-icon {
+  width: 52px;
+  height: 52px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: transform .3s;
+}
+
+.project-card:hover .card-icon { transform: scale(1.08) rotate(-2deg); }
+
+.card-icon--fiscal { background: linear-gradient(135deg, #e8f5ed, #d0eeda); color: var(--g600); }
+.card-icon--departamental { background: linear-gradient(135deg, #fdecea, #fbd5d5); color: var(--red-dark); }
+.card-icon--censal { background: linear-gradient(135deg, #e8eff8, #d0dfef); color: var(--blue-dark); }
+.card-icon--electoral { background: linear-gradient(135deg, #e8ecf4, #d0d8e8); color: var(--navy-deep); }
+
+.card-tag {
+  font-size: .6em;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  padding: 4px 12px;
+  border-radius: 6px;
+}
+
+.card-tag--fiscal { background: rgba(29,89,56,.08); color: var(--g600); }
+.card-tag--departamental { background: rgba(199,30,29,.06); color: var(--red-dark); }
+.card-tag--censal { background: rgba(31,111,235,.06); color: var(--blue-dark); }
+.card-tag--electoral { background: rgba(22,43,80,.06); color: var(--navy); }
+
+.card-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.45em;
+  font-weight: 700;
+  color: var(--g800);
+  margin-bottom: 12px;
+  line-height: 1.2;
+}
+
+.card-desc {
+  font-size: .88em;
+  color: var(--ink2);
+  line-height: 1.7;
+  flex: 1;
+  margin-bottom: 24px;
+}
+
+.card-metrics {
+  display: flex;
+  gap: 24px;
+  flex-wrap: wrap;
+  padding: 20px 0;
+  border-top: 1px solid var(--bg2);
+  border-bottom: 1px solid var(--bg2);
+  margin-bottom: 24px;
+}
+
+.card-metric { display: flex; flex-direction: column; }
+
+.card-metric-num {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 1.25em;
+  font-weight: 600;
+  line-height: 1;
+}
+
+.project-card--fiscal .card-metric-num { color: var(--g500); }
+.project-card--departamental .card-metric-num { color: var(--red); }
+.project-card--censal .card-metric-num { color: var(--blue); }
+.project-card--electoral .card-metric-num { color: var(--navy); }
+
+.card-metric-label {
+  font-size: .65em;
+  color: var(--mute);
+  text-transform: uppercase;
+  letter-spacing: .8px;
+  margin-top: 3px;
+}
+
+.card-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-size: .82em;
+  font-weight: 600;
+  text-decoration: none;
+  padding: 12px 24px;
+  border-radius: var(--radius-sm);
+  transition: all .3s cubic-bezier(.22,.68,0,1);
+  width: fit-content;
+  position: relative;
+  overflow: hidden;
+}
+
+.card-cta::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transition: opacity .3s;
+}
+
+.card-cta:hover::before { opacity: 1; }
+
+.card-cta--fiscal { background: var(--g500); color: #fff; }
+.card-cta--fiscal:hover { background: var(--g600); box-shadow: 0 4px 16px rgba(29,89,56,.35); }
+.card-cta--departamental { background: var(--red); color: #fff; }
+.card-cta--departamental:hover { background: var(--red-dark); box-shadow: 0 4px 16px rgba(199,30,29,.3); }
+.card-cta--censal { background: var(--blue); color: #fff; }
+.card-cta--censal:hover { background: var(--blue-dark); box-shadow: 0 4px 16px rgba(31,111,235,.3); }
+.card-cta--electoral { background: var(--navy); color: #fff; }
+.card-cta--electoral:hover { background: var(--navy-deep); box-shadow: 0 4px 16px rgba(22,43,80,.3); }
+
+.card-cta svg {
+  width: 16px;
+  height: 16px;
+  transition: transform .3s cubic-bezier(.22,.68,0,1);
+}
+
+.card-cta:hover svg { transform: translateX(4px); }
+
+/* ═══════════════════════════════════════════════
+   METHODOLOGY — glass cards
+   ═══════════════════════════════════════════════ */
+
+.methodology-wrap {
+  background: linear-gradient(170deg, var(--g800) 0%, var(--g700) 50%, var(--g600) 100%);
+  position: relative;
+  overflow: hidden;
+}
+
+.methodology-wrap .hero-grid-bg { opacity: .5; }
+
+.methodology-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+  position: relative;
+  z-index: 1;
+}
+
+.method-card {
+  background: rgba(255,255,255,.05);
+  border: 1px solid rgba(255,255,255,.08);
+  border-radius: var(--radius);
+  padding: 36px 28px;
+  text-align: center;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  transition: all .35s cubic-bezier(.22,.68,0,1);
+}
+
+.method-card:hover {
+  background: rgba(255,255,255,.08);
+  border-color: rgba(255,255,255,.12);
+  transform: translateY(-4px);
+}
+
+.method-icon {
+  width: 60px;
+  height: 60px;
+  border-radius: 16px;
+  background: rgba(52,168,101,.12);
+  border: 1px solid rgba(52,168,101,.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 20px;
+  transition: transform .3s;
+}
+
+.method-card:hover .method-icon { transform: scale(1.08); }
+
+.method-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.1em;
+  font-weight: 700;
+  color: #fff;
+  margin-bottom: 10px;
+}
+
+.method-desc {
+  font-size: .84em;
+  color: rgba(255,255,255,.55);
+  line-height: 1.7;
+}
+
+.methodology-wrap .section-label { color: var(--g200); }
+.methodology-wrap .section-label::before { background: var(--g300); }
+.methodology-wrap .section-title { color: #fff; }
+.methodology-wrap .section-desc { color: rgba(255,255,255,.55); }
+
+/* ═══════════════════════════════════════════════
+   SOURCES — data provenance
+   ═══════════════════════════════════════════════ */
+
+.sources-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px;
+}
+
+.source-card {
+  background: var(--white);
+  border: 1px solid var(--bg3);
+  border-radius: var(--radius);
+  padding: 28px 24px;
+  text-align: center;
+  box-shadow: var(--shadow-sm);
+  transition: all .35s cubic-bezier(.22,.68,0,1);
+}
+
+.source-card:hover {
+  box-shadow: var(--shadow-lg);
+  transform: translateY(-4px);
+  border-color: var(--g100);
+}
+
+.source-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  background: var(--g50);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 14px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: .75em;
+  font-weight: 600;
+  color: var(--g600);
+}
+
+.source-name {
+  font-weight: 600;
+  font-size: .9em;
+  color: var(--g800);
+  margin-bottom: 4px;
+}
+
+.source-desc {
+  font-size: .75em;
+  color: var(--mute);
+  line-height: 1.5;
+}
+
+/* ═══════════════════════════════════════════════
+   INSTITUCIONAL
+   ═══════════════════════════════════════════════ */
+
+.institucional-wrap {
+  background: var(--white);
+  border-top: 1px solid var(--bg3);
+}
+
+.institucional-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 20px;
+  padding: 20px 0;
+}
+
+.inst-logo {
+  aspect-ratio: 1;
+  border-radius: var(--radius);
+  background: #fff;
+  border: 1px solid var(--bg3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 14px;
+  box-shadow: var(--shadow-sm);
+  transition: all .3s cubic-bezier(.22,.68,0,1);
+  cursor: default;
+}
+
+.inst-logo:hover {
+  box-shadow: var(--shadow-lg);
+  transform: translateY(-4px);
+  border-color: var(--g100);
+}
+
+.inst-logo img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  filter: grayscale(.3);
+  transition: filter .3s;
+}
+
+.inst-logo:hover img {
+  filter: grayscale(0);
+}
+
+/* Hero logo */
+.hero-logo-main {
+  margin-bottom: 24px;
+  animation: logo-breathe 8s ease-in-out infinite;
+}
+
+.hero-logo-svg { filter: drop-shadow(0 0 20px rgba(111,207,142,.15)); }
+
+@keyframes logo-breathe {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  25% { transform: translateY(-6px) rotate(1.5deg); }
+  50% { transform: translateY(-2px) rotate(0deg); }
+  75% { transform: translateY(-8px) rotate(-1.5deg); }
+}
+
+/* ═══════════════════════════════════════════════
+   FOOTER
+   ═══════════════════════════════════════════════ */
+
+.footer {
+  background: var(--g900);
+  color: rgba(255,255,255,.55);
+  position: relative;
+  overflow: hidden;
+}
+
+.footer::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--g500), transparent);
+}
+
+.footer-main {
+  max-width: var(--max-w);
+  margin: 0 auto;
+  padding: 64px 32px 48px;
+  display: grid;
+  grid-template-columns: 1.5fr 1fr 1fr;
+  gap: 48px;
+}
+
+.footer-brand h3 {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.2em;
+  color: #fff;
+  margin-bottom: 12px;
+  line-height: 1.3;
+}
+
+.footer-brand p {
+  font-size: .85em;
+  line-height: 1.7;
+  max-width: 340px;
+  margin-bottom: 20px;
+}
+
+.footer-brand-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(52,168,101,.1);
+  border: 1px solid rgba(52,168,101,.15);
+  color: var(--g200);
+  font-size: .7em;
+  font-weight: 600;
+  padding: 5px 14px;
+  border-radius: 6px;
+}
+
+.footer-links h4 {
+  font-size: .68em;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: rgba(255,255,255,.3);
+  margin-bottom: 16px;
+}
+
+.footer-links a {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: rgba(255,255,255,.55);
+  text-decoration: none;
+  font-size: .85em;
+  padding: 5px 0;
+  transition: all .2s;
+}
+
+.footer-links a:hover { color: var(--g200); transform: translateX(4px); }
+
+.footer-links a svg {
+  width: 14px;
+  height: 14px;
+  opacity: .4;
+  flex-shrink: 0;
+}
+
+.footer-bottom {
+  max-width: var(--max-w);
+  margin: 0 auto;
+  padding: 20px 32px;
+  border-top: 1px solid rgba(255,255,255,.06);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.footer-bottom p {
+  font-size: .75em;
+  color: rgba(255,255,255,.3);
+}
+
+.footer-bottom-links {
+  display: flex;
+  gap: 20px;
+}
+
+.footer-bottom-links a {
+  font-size: .75em;
+  color: rgba(255,255,255,.3);
+  text-decoration: none;
+  transition: color .2s;
+}
+
+.footer-bottom-links a:hover { color: var(--g200); }
+
+/* ═══════════════════════════════════════════════
+   MOBILE NAV OVERLAY
+   ═══════════════════════════════════════════════ */
+
+.mobile-nav {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  background: rgba(7,26,15,.95);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .35s;
+}
+
+.mobile-nav.open {
+  opacity: 1;
+  pointer-events: all;
+}
+
+.mobile-nav a {
+  color: rgba(255,255,255,.7);
+  text-decoration: none;
+  font-size: 1.3em;
+  font-weight: 500;
+  padding: 14px 32px;
+  border-radius: 12px;
+  transition: all .2s;
+}
+
+.mobile-nav a:hover {
+  color: #fff;
+  background: rgba(255,255,255,.06);
+}
+
+.mobile-nav-close {
+  position: absolute;
+  top: 20px;
+  right: 24px;
+  background: none;
+  border: none;
+  color: rgba(255,255,255,.5);
+  cursor: pointer;
+  padding: 8px;
+}
+
+/* ═══════════════════════════════════════════════
+   RESPONSIVE
+   ═══════════════════════════════════════════════ */
+
+@media (max-width: 960px) {
+  .projects-grid { grid-template-columns: 1fr; }
+  .methodology-grid { grid-template-columns: 1fr; gap: 16px; }
+  .sources-grid { grid-template-columns: repeat(2, 1fr); }
+  .footer-main { grid-template-columns: 1fr; gap: 32px; }
+  .header-nav { display: none; }
+  .nav-toggle { display: flex; }
+  .theme-toggle--compact { display: flex; }
+  .mobile-nav { display: flex; }
+  .hero { padding: 100px 20px 64px; min-height: auto; min-height: 100svh; }
+  .section { padding: 64px 20px; }
+  .hero-stats { flex-wrap: wrap; border-radius: 12px; }
+  .hero-stat { min-width: 100px; padding: 18px 20px; }
+  .institucional-grid { grid-template-columns: repeat(4, 1fr); }
+  .hero-logo-main svg { width: 120px; height: 120px; }
+  .section-divider svg { height: 36px; }
+}
+
+@media (max-width: 600px) {
+  :root { --header-h: 60px; }
+  .header-inner { padding: 0 16px; }
+  .header-brand-text { font-size: .7em; }
+  .hero { padding: 80px 16px 56px; }
+  .hero h1 { font-size: 1.65em; }
+  .hero-subtitle { font-size: .85em; margin-bottom: 20px; }
+  .hero-desc { font-size: .9em; margin-bottom: 32px; }
+  .hero-logo-main svg { width: 96px; height: 96px; }
+  .hero-logo-main { margin-bottom: 14px; }
+  .hero-badge { font-size: .6em; padding: 5px 14px; margin-bottom: 18px; }
+  .hero-stats { border-radius: 10px; }
+  .hero-stat { min-width: 70px; padding: 12px 8px; }
+  .hero-stat-num { font-size: 1.3em; }
+  .hero-stat-label { font-size: .58em; letter-spacing: .8px; }
+  .hero-scroll-hint { display: none; }
+  .section { padding: 48px 16px; }
+  .section-header { margin-bottom: 36px; }
+  .section-title { font-size: 1.4em; }
+  .section-desc { font-size: .88em; }
+  .card-body { padding: 20px; }
+  .card-top { margin-bottom: 14px; }
+  .card-icon { width: 44px; height: 44px; border-radius: 10px; }
+  .card-title { font-size: 1.2em; }
+  .card-desc { font-size: .82em; margin-bottom: 18px; }
+  .card-metrics { gap: 14px; padding: 14px 0; margin-bottom: 18px; }
+  .card-metric-num { font-size: 1.1em; }
+  .card-cta { font-size: .78em; padding: 10px 18px; }
+  .method-card { padding: 24px 18px; }
+  .method-title { font-size: 1em; }
+  .method-desc { font-size: .8em; }
+  .institucional-grid { grid-template-columns: repeat(3, 1fr); gap: 10px; }
+  .inst-logo { padding: 10px; border-radius: 10px; }
+  .sources-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
+  .source-card { padding: 20px 14px; }
+  .source-icon { width: 40px; height: 40px; font-size: .65em; }
+  .source-name { font-size: .8em; }
+  .source-desc { font-size: .7em; }
+  .footer-main { padding: 40px 16px 28px; gap: 24px; }
+  .footer-brand h3 { font-size: 1em; }
+  .footer-brand p { font-size: .8em; }
+  .footer-bottom { padding: 14px 16px; }
+  .footer-bottom p { font-size: .68em; }
+  .section-divider svg { height: 28px; }
+
+  /* Mobile nav spacing */
+  .mobile-nav a { font-size: 1.1em; padding: 12px 28px; }
+}
+</style>
+</head>
+<body>
+
+<!-- ═══ HEADER ═══ -->
+<header class="header" id="header">
+  <div class="header-inner">
+    <a href="#" class="header-brand">
+      <svg class="header-logo-svg" width="38" height="38" viewBox="0 0 200 200">
+        <polygon points="100,10 155,35 191,84 173,142 130,183 69,185 26,143 10,84 45,35" fill="none" stroke="rgba(255,255,255,.85)" stroke-width="6" stroke-linejoin="round"/>
+        <polygon points="122,33 156,65 171,110 145,150 102,169 56,156 35,114 36,66 75,39" fill="none" stroke="rgba(255,255,255,.5)" stroke-width="5" stroke-linejoin="round"/>
+        <polygon points="129,60 146,89 147,123 120,144 86,148 58,129 52,95 64,63 97,53" fill="none" stroke="rgba(255,255,255,.3)" stroke-width="4" stroke-linejoin="round"/>
+        <polygon points="124,82 128,102 122,122 103,128 83,125 71,108 74,89 86,72 107,73" fill="none" stroke="rgba(255,255,255,.15)" stroke-width="3" stroke-linejoin="round"/>
+      </svg>
+      <div class="header-brand-text">
+        OFPDT
+        <span>Observatorio</span>
+      </div>
+    </a>
+
+    <nav class="header-nav" id="desktopNav">
+      <a href="#proyectos">Plataformas</a>
+      <a href="#metodologia">Metodología</a>
+      <a href="#fuentes">Fuentes</a>
+      <a href="#instituciones">Instituciones</a>
+      <button class="theme-toggle" id="themeToggle" aria-label="Cambiar tema">
+        <svg class="theme-icon-sun" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+        <svg class="theme-icon-moon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+      </button>
+    </nav>
+
+    <div class="header-right-mobile">
+      <button class="theme-toggle theme-toggle--compact" id="themeToggleCompact" aria-label="Cambiar tema">
+        <svg class="theme-icon-sun" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+        <svg class="theme-icon-moon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+      </button>
+      <button class="nav-toggle" id="navToggle" aria-label="Menú">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+<!-- Mobile nav overlay -->
+<div class="mobile-nav" id="mobileNav">
+  <button class="mobile-nav-close" id="navClose" aria-label="Cerrar">
+    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+  </button>
+  <a href="#proyectos">Plataformas</a>
+  <a href="#metodologia">Metodología</a>
+  <a href="#fuentes">Fuentes</a>
+  <a href="#instituciones">Instituciones</a>
+  <button class="theme-toggle theme-toggle--mobile" id="themeToggleMobile" aria-label="Cambiar tema">
+    <svg class="theme-icon-sun" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+    <svg class="theme-icon-moon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+    <span>Cambiar tema</span>
+  </button>
+</div>
+
+<!-- Scroll progress -->
+<div class="scroll-progress" id="scrollProgress"></div>
+
+<!-- ═══ HERO ═══ -->
+<section class="hero" id="heroSection">
+  <canvas class="hero-canvas" id="heroCanvas"></canvas>
+  <div class="hero-grid-bg"></div>
+
+  <div class="hero-content">
+    <div class="hero-logo-main">
+      <svg class="hero-logo-svg" width="160" height="160" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <filter id="logoGlow">
+            <feGaussianBlur in="SourceGraphic" stdDeviation="3" result="blur"/>
+            <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+          </filter>
+          <radialGradient id="centerGlow" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stop-color="rgba(111,207,142,.12)"/>
+            <stop offset="100%" stop-color="rgba(111,207,142,0)"/>
+          </radialGradient>
+        </defs>
+        <circle cx="100" cy="100" r="55" fill="url(#centerGlow)"/>
+        <g filter="url(#logoGlow)">
+          <!-- Layer 1 — outer -->
+          <polygon points="100,10 155,35 191,84 173,142 130,183 69,185 26,143 10,84 45,35" fill="none" stroke="rgba(255,255,255,.85)" stroke-width="3.2" stroke-linejoin="round"/>
+          <!-- Layer 2 -->
+          <polygon points="122,33 156,65 171,110 145,150 102,169 56,156 35,114 36,66 75,39" fill="none" stroke="rgba(255,255,255,.55)" stroke-width="2.6" stroke-linejoin="round"/>
+          <!-- Layer 3 -->
+          <polygon points="129,60 146,89 147,123 120,144 86,148 58,129 52,95 64,63 97,53" fill="none" stroke="rgba(255,255,255,.32)" stroke-width="2" stroke-linejoin="round"/>
+          <!-- Layer 4 — inner -->
+          <polygon points="124,82 128,102 122,122 103,128 83,125 71,108 74,89 86,72 107,73" fill="none" stroke="rgba(255,255,255,.18)" stroke-width="1.5" stroke-linejoin="round"/>
+        </g>
+      </svg>
+    </div>
+    <div class="hero-badge">
+      <span class="hero-badge-dot"></span>
+      Datos abiertos · Bolivia
+    </div>
+    <h1>Observatorio de Finanzas Públicas y&nbsp;Desarrollo <em>Territorial</em></h1>
+    <p class="hero-subtitle">Información verificable para decisiones informadas</p>
+    <p class="hero-desc">
+      Plataforma de dashboards interactivos con datos oficiales del SIGEP, INE y&nbsp;TSE.
+      Análisis fiscal, censal y electoral a escala municipal, departamental y&nbsp;nacional.
+    </p>
+    <div class="hero-stats">
+      <div class="hero-stat">
+        <span class="hero-stat-num" data-target="343">0</span>
+        <span class="hero-stat-label">Municipios y GAIOCs</span>
+      </div>
+      <div class="hero-stat">
+        <span class="hero-stat-num" data-target="9">0</span>
+        <span class="hero-stat-label">Departamentos</span>
+      </div>
+      <div class="hero-stat">
+        <span class="hero-stat-num" data-target="12">0</span>
+        <span class="hero-stat-label">Gestiones</span>
+      </div>
+      <div class="hero-stat">
+        <span class="hero-stat-num" data-target="4">0</span>
+        <span class="hero-stat-label">Plataformas</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="hero-scroll-hint">
+    <span>Explorar</span>
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M19 12l-7 7-7-7"/></svg>
+  </div>
+</section>
+
+<!-- Divider hero → proyectos -->
+<div class="section-divider section-divider--beige">
+  <svg viewBox="0 0 1440 60" preserveAspectRatio="none"><path d="M0,0 C360,60 1080,60 1440,0 L1440,60 L0,60 Z"/></svg>
+</div>
+
+<!-- ═══ PROYECTOS ═══ -->
+<section class="section" id="proyectos">
+  <div class="section-header reveal">
+    <div class="section-label">Plataformas</div>
+    <h2 class="section-title">Nuestros proyectos</h2>
+    <p class="section-desc">
+      Cada plataforma aborda una dimensión del desarrollo territorial boliviano con datos oficiales procesados y visualizaciones interactivas de acceso libre.
+    </p>
+  </div>
+
+  <div class="projects-grid">
+
+    <!-- Atlas Fiscal Municipal -->
+    <div class="tilt-wrap">
+    <article class="project-card project-card--fiscal reveal reveal-delay-1">
+      <div class="card-accent card-accent--fiscal"></div>
+      <div class="card-body">
+        <div class="card-top">
+          <div class="card-icon card-icon--fiscal">
+            <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+          </div>
+          <span class="card-tag card-tag--fiscal">Finanzas municipales</span>
+        </div>
+        <h3 class="card-title">Atlas Fiscal Municipal</h3>
+        <p class="card-desc">
+          Ingresos, gastos y financiamiento de cada municipio y gobierno autónomo indígena originario campesino de Bolivia. Serie completa de datos ejecutados del SIGEP con gráficos interactivos por entidad.
+        </p>
+        <div class="card-metrics">
+          <div class="card-metric">
+            <span class="card-metric-num">335</span>
+            <span class="card-metric-label">Municipios</span>
+          </div>
+          <div class="card-metric">
+            <span class="card-metric-num">8</span>
+            <span class="card-metric-label">GAIOCs</span>
+          </div>
+          <div class="card-metric">
+            <span class="card-metric-num">2016–2025</span>
+            <span class="card-metric-label">Serie temporal</span>
+          </div>
+        </div>
+        <a class="card-cta card-cta--fiscal" href="https://centro-de-estudios-populi.github.io/Atlas-Fiscal-Municipal/" target="_blank" rel="noopener">
+          Explorar Atlas
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+        </a>
+      </div>
+    </article>
+    </div>
+
+    <!-- Finanzas Públicas Departamentales -->
+    <div class="tilt-wrap">
+    <article class="project-card project-card--departamental reveal reveal-delay-2">
+      <div class="card-accent card-accent--departamental"></div>
+      <div class="card-body">
+        <div class="card-top">
+          <div class="card-icon card-icon--departamental">
+            <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18"/><path d="M5 21V7l7-4 7 4v14"/><path d="M9 21v-6h6v6"/><path d="M9 9h.01"/><path d="M15 9h.01"/><path d="M9 13h.01"/><path d="M15 13h.01"/></svg>
+          </div>
+          <span class="card-tag card-tag--departamental">Finanzas departamentales</span>
+        </div>
+        <h3 class="card-title">Finanzas Públicas Departamentales</h3>
+        <p class="card-desc">
+          Cuenta Ahorro-Inversión-Financiamiento de las 9 gobernaciones, con 33 indicadores fiscales sobre autonomía, recursos naturales y descentralización. Incluye mapa coroplético comparativo y simulador de coparticipación tributaria.
+        </p>
+        <div class="card-metrics">
+          <div class="card-metric">
+            <span class="card-metric-num">9</span>
+            <span class="card-metric-label">Gobernaciones</span>
+          </div>
+          <div class="card-metric">
+            <span class="card-metric-num">33</span>
+            <span class="card-metric-label">Indicadores</span>
+          </div>
+          <div class="card-metric">
+            <span class="card-metric-num">2014–2025</span>
+            <span class="card-metric-label">Serie temporal</span>
+          </div>
+        </div>
+        <a class="card-cta card-cta--departamental" href="https://centro-de-estudios-populi.github.io/Finanzas-P-blicas-Departamentales/" target="_blank" rel="noopener">
+          Explorar Finanzas
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+        </a>
+      </div>
+    </article>
+    </div>
+
+    <!-- Retrato Censal -->
+    <div class="tilt-wrap">
+    <article class="project-card project-card--censal reveal reveal-delay-3">
+      <div class="card-accent card-accent--censal"></div>
+      <div class="card-body">
+        <div class="card-top">
+          <div class="card-icon card-icon--censal">
+            <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></svg>
+          </div>
+          <span class="card-tag card-tag--censal">Censo 2024</span>
+        </div>
+        <h3 class="card-title">Retrato Censal Bolivia</h3>
+        <p class="card-desc">
+          Visualización interactiva del Censo de Población y Vivienda 2024 a escala de manzana. Indicadores demográficos, económicos, educativos, de salud, vivienda y servicios básicos con mapas de alta resolución por municipio.
+        </p>
+        <div class="card-metrics">
+          <div class="card-metric">
+            <span class="card-metric-num">CPV</span>
+            <span class="card-metric-label">2024</span>
+          </div>
+          <div class="card-metric">
+            <span class="card-metric-num">50+</span>
+            <span class="card-metric-label">Indicadores</span>
+          </div>
+          <div class="card-metric">
+            <span class="card-metric-num">Manzana</span>
+            <span class="card-metric-label">Escala</span>
+          </div>
+        </div>
+        <a class="card-cta card-cta--censal" href="https://centro-de-estudios-populi.github.io/Retrato-Censal-2024/" target="_blank" rel="noopener">
+          Explorar Censo
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+        </a>
+      </div>
+    </article>
+    </div>
+
+    <!-- Elecciones -->
+    <div class="tilt-wrap">
+    <article class="project-card project-card--electoral reveal reveal-delay-4">
+      <div class="card-accent card-accent--electoral"></div>
+      <div class="card-body">
+        <div class="card-top">
+          <div class="card-icon card-icon--electoral">
+            <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M16 2v4"/><path d="M8 2v4"/><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M3 10h18"/><path d="m9 16 2 2 4-4"/></svg>
+          </div>
+          <span class="card-tag card-tag--electoral">Democracia</span>
+        </div>
+        <h3 class="card-title">Elecciones Autonómicas 2026</h3>
+        <p class="card-desc">
+          Resultados electorales de gobernaciones, asambleas legislativas departamentales y municipios. Incluye análisis de segunda vuelta en 5 departamentos con transferencia de votos, correlaciones y polarización territorial.
+        </p>
+        <div class="card-metrics">
+          <div class="card-metric">
+            <span class="card-metric-num">9</span>
+            <span class="card-metric-label">Gobernaciones</span>
+          </div>
+          <div class="card-metric">
+            <span class="card-metric-num">5</span>
+            <span class="card-metric-label">Segunda vuelta</span>
+          </div>
+          <div class="card-metric">
+            <span class="card-metric-num">TSE</span>
+            <span class="card-metric-label">Fuente oficial</span>
+          </div>
+        </div>
+        <a class="card-cta card-cta--electoral" href="https://centro-de-estudios-populi.github.io/Elecciones-Auton-micas-2026/" target="_blank" rel="noopener">
+          Explorar Resultados
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+        </a>
+      </div>
+    </article>
+    </div>
+
+  </div>
+</section>
+
+<!-- Divider proyectos → metodología -->
+<div class="section-divider section-divider--green">
+  <svg viewBox="0 0 1440 60" preserveAspectRatio="none"><path d="M0,60 C480,0 960,0 1440,60 L1440,60 L0,60 Z"/></svg>
+</div>
+
+<!-- ═══ METODOLOGIA ═══ -->
+<section class="methodology-wrap" id="metodologia">
+  <div class="hero-grid-bg"></div>
+  <div class="section">
+    <div class="section-header reveal">
+      <div class="section-label">Enfoque</div>
+      <h2 class="section-title">Metodología</h2>
+      <p class="section-desc">
+        Todos los datos provienen de fuentes oficiales y son procesados con criterios de transparencia y replicabilidad.
+      </p>
+    </div>
+
+    <div class="methodology-grid">
+      <div class="method-card reveal reveal-delay-1">
+        <div class="method-icon">
+          <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="var(--g200)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+        </div>
+        <h3 class="method-title">Datos ejecutados</h3>
+        <p class="method-desc">Trabajamos con cifras ejecutadas, no presupuestadas. En Bolivia existen divergencias recurrentes entre aprobaciones y ejecución real.</p>
+      </div>
+      <div class="method-card reveal reveal-delay-2">
+        <div class="method-icon">
+          <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="var(--g200)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-6.219-8.56"/><path d="M21 3v6h-6"/></svg>
+        </div>
+        <h3 class="method-title">Actualización continua</h3>
+        <p class="method-desc">Los dashboards se actualizan conforme las fuentes oficiales publican nuevos datos: SIGEP, INE, BCB y TSE.</p>
+      </div>
+      <div class="method-card reveal reveal-delay-3">
+        <div class="method-icon">
+          <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="var(--g200)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m16 18 2 2 4-4"/><path d="M21 12V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4"/><path d="M12 22V12"/><path d="m3.3 7 8.7 5 8.7-5"/></svg>
+        </div>
+        <h3 class="method-title">Código abierto</h3>
+        <p class="method-desc">Todo el procesamiento, los scripts y las visualizaciones son públicos en GitHub para garantizar la replicabilidad.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Divider metodología → fuentes -->
+<div class="section-divider section-divider--beige">
+  <svg viewBox="0 0 1440 60" preserveAspectRatio="none"><path d="M0,0 C360,60 1080,60 1440,0 L1440,60 L0,60 Z"/></svg>
+</div>
+
+<!-- ═══ FUENTES ═══ -->
+<section class="section" id="fuentes">
+  <div class="section-header reveal">
+    <div class="section-label">Origen de los datos</div>
+    <h2 class="section-title">Fuentes oficiales</h2>
+    <p class="section-desc">
+      Cada indicador está respaldado por registros administrativos públicos de instituciones del Estado boliviano.
+    </p>
+  </div>
+
+  <div class="sources-grid">
+    <div class="source-card reveal reveal-delay-1">
+      <div class="source-icon">SIGEP</div>
+      <div class="source-name">SIGEP</div>
+      <div class="source-desc">Sistema de Gestión Pública. Ejecución presupuestaria municipal y departamental.</div>
+    </div>
+    <div class="source-card reveal reveal-delay-2">
+      <div class="source-icon">INE</div>
+      <div class="source-name">INE</div>
+      <div class="source-desc">Instituto Nacional de Estadística. Censo de Población y Vivienda 2024.</div>
+    </div>
+    <div class="source-card reveal reveal-delay-3">
+      <div class="source-icon">TSE</div>
+      <div class="source-name">TSE / OEP</div>
+      <div class="source-desc">Tribunal Supremo Electoral. Resultados electorales autonómicos 2026.</div>
+    </div>
+    <div class="source-card reveal reveal-delay-4">
+      <div class="source-icon">MEFP</div>
+      <div class="source-name">MEFP</div>
+      <div class="source-desc">Ministerio de Economía y Finanzas Públicas. Clasificadores presupuestarios.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ INSTITUCIONES ═══ -->
+<section class="institucional-wrap" id="instituciones">
+  <div class="section">
+    <div class="section-header reveal">
+      <div class="section-label">Respaldado por</div>
+      <h2 class="section-title">Instituciones</h2>
+      <p class="section-desc">
+        Este observatorio es un proyecto colaborativo entre instituciones comprometidas con la transparencia y el análisis de datos públicos en Bolivia.
+      </p>
+    </div>
+
+    <div class="institucional-grid reveal">
+      <div class="inst-logo"><img src="assets/populi.png" alt="Centro de Estudios POPULI"></div>
+      <div class="inst-logo"><img src="assets/cctd.png" alt="Comité Consultivo Técnico Departamental"></div>
+      <div class="inst-logo"><img src="assets/cadecocruz.png" alt="CADECOCRUZ"></div>
+      <div class="inst-logo"><img src="assets/col-arquitectos.png" alt="Colegio de Arquitectos de Santa Cruz"></div>
+      <div class="inst-logo"><img src="assets/sib.png" alt="SIB Santa Cruz"></div>
+      <div class="inst-logo"><img src="assets/fepsc.png" alt="Federación de Empresarios Privados de Santa Cruz"></div>
+      <div class="inst-logo"><img src="assets/gad-scz.png" alt="Gobierno Autónomo Departamental de Santa Cruz"></div>
+      <div class="inst-logo"><img src="assets/upsa.png" alt="UPSA"></div>
+      <div class="inst-logo"><img src="assets/cadex.png" alt="CADEX"></div>
+      <div class="inst-logo"><img src="assets/cao.png" alt="Cámara Agropecuaria del Oriente"></div>
+      <div class="inst-logo"><img src="assets/col-economistas.png" alt="Colegio de Economistas de Santa Cruz"></div>
+      <div class="inst-logo"><img src="assets/cadehcruz.png" alt="Cámara Hotelera de Santa Cruz"></div>
+      <div class="inst-logo"><img src="assets/cadepia.png" alt="CADEPIA"></div>
+      <div class="inst-logo"><img src="assets/cg-scz.png" alt="Cámara Gastronómica SCZ"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ FOOTER ═══ -->
+<footer class="footer">
+  <div class="footer-main">
+    <div class="footer-brand">
+      <h3>Observatorio de Finanzas Públicas<br>y Desarrollo Territorial</h3>
+      <p>Información verificable para la toma de decisiones de política pública. Un proyecto del Centro de Estudios POPULI.</p>
+      <div class="footer-brand-badge">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        Datos de acceso público
+      </div>
+    </div>
+    <div class="footer-links">
+      <h4>Plataformas</h4>
+      <a href="https://centro-de-estudios-populi.github.io/Atlas-Fiscal-Municipal/" target="_blank">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+        Atlas Fiscal Municipal
+      </a>
+      <a href="https://centro-de-estudios-populi.github.io/Finanzas-P-blicas-Departamentales/" target="_blank">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+        Finanzas Departamentales
+      </a>
+      <a href="https://centro-de-estudios-populi.github.io/Retrato-Censal-2024/" target="_blank">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+        Retrato Censal 2024
+      </a>
+      <a href="https://centro-de-estudios-populi.github.io/Elecciones-Auton-micas-2026/" target="_blank">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+        Elecciones 2026
+      </a>
+    </div>
+    <div class="footer-links">
+      <h4>Fuentes oficiales</h4>
+      <a href="https://www.sigep.gob.bo" target="_blank">SIGEP</a>
+      <a href="https://www.ine.gob.bo" target="_blank">INE Bolivia</a>
+      <a href="https://www.oep.org.bo" target="_blank">TSE / OEP</a>
+      <a href="https://github.com/Centro-de-Estudios-POPULI" target="_blank">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/></svg>
+        GitHub
+      </a>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <p>&copy; 2026 Centro de Estudios POPULI &middot; Santa Cruz de la Sierra, Bolivia</p>
+    <div class="footer-bottom-links">
+      <a href="https://github.com/Centro-de-Estudios-POPULI" target="_blank">Repositorios</a>
+    </div>
+  </div>
+</footer>
+
+<!-- ═══ SCRIPTS ═══ -->
+<script>
+(function() {
+
+  // ═══════════════════════════════════════════════
+  // INTERACTIVE PARTICLE NETWORK (Canvas)
+  // ═══════════════════════════════════════════════
+  var canvas = document.getElementById('heroCanvas');
+  var ctx = canvas.getContext('2d');
+  var hero = document.getElementById('heroSection');
+  var mouse = { x: -1000, y: -1000 };
+  var particles = [];
+  var PARTICLE_COUNT = 80;
+  var CONNECT_DIST = 150;
+  var MOUSE_RADIUS = 200;
+  var animId;
+
+  function resizeCanvas() {
+    canvas.width = hero.offsetWidth;
+    canvas.height = hero.offsetHeight;
+  }
+
+  function Particle() {
+    this.x = Math.random() * canvas.width;
+    this.y = Math.random() * canvas.height;
+    this.vx = (Math.random() - 0.5) * 0.4;
+    this.vy = (Math.random() - 0.5) * 0.4;
+    this.radius = Math.random() * 2 + 1;
+    this.baseAlpha = Math.random() * 0.4 + 0.15;
+    this.alpha = this.baseAlpha;
+  }
+
+  function initParticles() {
+    particles = [];
+    var count = window.innerWidth < 768 ? 40 : PARTICLE_COUNT;
+    for (var i = 0; i < count; i++) {
+      particles.push(new Particle());
+    }
+  }
+
+  function drawParticles() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    for (var i = 0; i < particles.length; i++) {
+      var p = particles[i];
+
+      // Mouse interaction — gentle attraction
+      var dx = mouse.x - p.x;
+      var dy = mouse.y - p.y;
+      var dist = Math.sqrt(dx * dx + dy * dy);
+      if (dist < MOUSE_RADIUS) {
+        var force = (MOUSE_RADIUS - dist) / MOUSE_RADIUS * 0.008;
+        p.vx += dx * force;
+        p.vy += dy * force;
+        p.alpha = p.baseAlpha + (1 - dist / MOUSE_RADIUS) * 0.4;
+      } else {
+        p.alpha += (p.baseAlpha - p.alpha) * 0.02;
+      }
+
+      // Damping
+      p.vx *= 0.99;
+      p.vy *= 0.99;
+
+      p.x += p.vx;
+      p.y += p.vy;
+
+      // Wrap edges
+      if (p.x < 0) p.x = canvas.width;
+      if (p.x > canvas.width) p.x = 0;
+      if (p.y < 0) p.y = canvas.height;
+      if (p.y > canvas.height) p.y = 0;
+
+      // Draw particle
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(111,207,142,' + p.alpha + ')';
+      ctx.fill();
+
+      // Connect nearby particles
+      for (var j = i + 1; j < particles.length; j++) {
+        var p2 = particles[j];
+        var ddx = p.x - p2.x;
+        var ddy = p.y - p2.y;
+        var d = Math.sqrt(ddx * ddx + ddy * ddy);
+        if (d < CONNECT_DIST) {
+          var lineAlpha = (1 - d / CONNECT_DIST) * 0.15;
+          // Brighten lines near mouse
+          var midX = (p.x + p2.x) / 2;
+          var midY = (p.y + p2.y) / 2;
+          var md = Math.sqrt((mouse.x - midX) * (mouse.x - midX) + (mouse.y - midY) * (mouse.y - midY));
+          if (md < MOUSE_RADIUS) {
+            lineAlpha += (1 - md / MOUSE_RADIUS) * 0.12;
+          }
+          ctx.beginPath();
+          ctx.moveTo(p.x, p.y);
+          ctx.lineTo(p2.x, p2.y);
+          ctx.strokeStyle = 'rgba(111,207,142,' + lineAlpha + ')';
+          ctx.lineWidth = 0.6;
+          ctx.stroke();
+        }
+      }
+    }
+
+    animId = requestAnimationFrame(drawParticles);
+  }
+
+  hero.addEventListener('mousemove', function(e) {
+    var rect = hero.getBoundingClientRect();
+    mouse.x = e.clientX - rect.left;
+    mouse.y = e.clientY - rect.top;
+  });
+
+  hero.addEventListener('mouseleave', function() {
+    mouse.x = -1000;
+    mouse.y = -1000;
+  });
+
+  // Touch support
+  hero.addEventListener('touchmove', function(e) {
+    var rect = hero.getBoundingClientRect();
+    mouse.x = e.touches[0].clientX - rect.left;
+    mouse.y = e.touches[0].clientY - rect.top;
+  }, { passive: true });
+
+  hero.addEventListener('touchend', function() {
+    mouse.x = -1000;
+    mouse.y = -1000;
+  });
+
+  window.addEventListener('resize', function() {
+    resizeCanvas();
+    initParticles();
+  });
+
+  resizeCanvas();
+  initParticles();
+  drawParticles();
+
+  // Pause canvas when not visible
+  var heroObserver = new IntersectionObserver(function(entries) {
+    if (entries[0].isIntersecting) {
+      if (!animId) drawParticles();
+    } else {
+      cancelAnimationFrame(animId);
+      animId = null;
+    }
+  }, { threshold: 0 });
+  heroObserver.observe(hero);
+
+  // ═══════════════════════════════════════════════
+  // SCROLL PROGRESS BAR
+  // ═══════════════════════════════════════════════
+  var progressBar = document.getElementById('scrollProgress');
+
+  // ═══════════════════════════════════════════════
+  // HEADER + SCROLL EFFECTS (batched)
+  // ═══════════════════════════════════════════════
+  var header = document.getElementById('header');
+  var sections = document.querySelectorAll('section[id], .methodology-wrap[id], .institucional-wrap[id]');
+  var navLinks = document.querySelectorAll('.header-nav a');
+  var scrollTicking = false;
+
+  function onScroll() {
+    // Header
+    if (window.scrollY > 60) {
+      header.classList.add('scrolled');
+    } else {
+      header.classList.remove('scrolled');
+    }
+
+    // Progress bar
+    var docHeight = document.documentElement.scrollHeight - window.innerHeight;
+    var progress = docHeight > 0 ? (window.scrollY / docHeight) * 100 : 0;
+    progressBar.style.width = progress + '%';
+
+    // Active nav
+    var current = '';
+    sections.forEach(function(s) {
+      if (window.scrollY >= s.offsetTop - 120) {
+        current = s.getAttribute('id');
+      }
+    });
+    navLinks.forEach(function(link) {
+      link.classList.toggle('active', link.getAttribute('href') === '#' + current);
+    });
+
+    scrollTicking = false;
+  }
+
+  window.addEventListener('scroll', function() {
+    if (!scrollTicking) {
+      requestAnimationFrame(onScroll);
+      scrollTicking = true;
+    }
+  }, { passive: true });
+
+  // ═══════════════════════════════════════════════
+  // WORD REVEAL — animate hero title words
+  // ═══════════════════════════════════════════════
+  var h1 = document.querySelector('.hero h1');
+  if (h1) {
+    var html = h1.innerHTML;
+    // Wrap each word in a span, preserve HTML tags
+    var words = [];
+    var wordIndex = 0;
+    var result = html.replace(/>([^<]+)</g, function(match, text) {
+      var replaced = text.replace(/(\S+)/g, function(word) {
+        var delay = (wordIndex * 0.07 + 0.3);
+        wordIndex++;
+        return '<span class="word" style="animation-delay:' + delay.toFixed(2) + 's">' + word + '</span>';
+      });
+      return '>' + replaced + '<';
+    });
+    // Also handle top-level text nodes
+    var parts = result.split(/(<[^>]+>)/);
+    var finalHtml = parts.map(function(part) {
+      if (part.charAt(0) === '<') return part;
+      return part.replace(/(\S+)/g, function(word) {
+        var delay = (wordIndex * 0.07 + 0.3);
+        wordIndex++;
+        return '<span class="word" style="animation-delay:' + delay.toFixed(2) + 's">' + word + '</span>';
+      });
+    }).join('');
+    h1.innerHTML = finalHtml;
+  }
+
+  // ═══════════════════════════════════════════════
+  // MOBILE NAV
+  // ═══════════════════════════════════════════════
+  var mobileNav = document.getElementById('mobileNav');
+  document.getElementById('navToggle').addEventListener('click', function() {
+    mobileNav.classList.add('open');
+    document.body.style.overflow = 'hidden';
+  });
+
+  function closeNav() {
+    mobileNav.classList.remove('open');
+    document.body.style.overflow = '';
+  }
+
+  document.getElementById('navClose').addEventListener('click', closeNav);
+  mobileNav.querySelectorAll('a').forEach(function(a) {
+    a.addEventListener('click', closeNav);
+  });
+
+  // ═══════════════════════════════════════════════
+  // ANIMATED COUNTERS
+  // ═══════════════════════════════════════════════
+  var countersAnimated = false;
+
+  function animateCounters() {
+    if (countersAnimated) return;
+    var statNums = document.querySelectorAll('.hero-stat-num[data-target]');
+    var heroRect = document.querySelector('.hero-stats').getBoundingClientRect();
+    if (heroRect.top > window.innerHeight) return;
+
+    countersAnimated = true;
+    statNums.forEach(function(el) {
+      var target = parseInt(el.getAttribute('data-target'));
+      var duration = 2000;
+      var start = performance.now();
+
+      function step(now) {
+        var progress = Math.min((now - start) / duration, 1);
+        var ease = 1 - Math.pow(1 - progress, 4);
+        el.textContent = Math.round(target * ease);
+        if (progress < 1) requestAnimationFrame(step);
+      }
+
+      requestAnimationFrame(step);
+    });
+  }
+
+  window.addEventListener('scroll', animateCounters, { passive: true });
+  setTimeout(animateCounters, 600);
+
+  // ═══════════════════════════════════════════════
+  // REVEAL ON SCROLL
+  // ═══════════════════════════════════════════════
+  var reveals = document.querySelectorAll('.reveal');
+  if ('IntersectionObserver' in window) {
+    var revealObs = new IntersectionObserver(function(entries) {
+      entries.forEach(function(entry) {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+          revealObs.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.1, rootMargin: '0px 0px -60px 0px' });
+
+    reveals.forEach(function(el) { revealObs.observe(el); });
+  } else {
+    reveals.forEach(function(el) { el.classList.add('visible'); });
+  }
+
+  // ═══════════════════════════════════════════════
+  // 3D TILT on project cards
+  // ═══════════════════════════════════════════════
+  if (window.innerWidth > 768) {
+    document.querySelectorAll('.tilt-wrap').forEach(function(wrap) {
+      var card = wrap.querySelector('.project-card');
+
+      wrap.addEventListener('mousemove', function(e) {
+        var rect = wrap.getBoundingClientRect();
+        var x = e.clientX - rect.left;
+        var y = e.clientY - rect.top;
+        var centerX = rect.width / 2;
+        var centerY = rect.height / 2;
+        var rotateX = ((y - centerY) / centerY) * -4;
+        var rotateY = ((x - centerX) / centerX) * 4;
+
+        card.style.transform = 'perspective(800px) rotateX(' + rotateX + 'deg) rotateY(' + rotateY + 'deg) translateY(-6px)';
+      });
+
+      wrap.addEventListener('mouseleave', function() {
+        card.style.transform = '';
+        card.style.transition = 'transform .5s cubic-bezier(.22,.68,0,1)';
+        setTimeout(function() { card.style.transition = ''; }, 500);
+      });
+    });
+  }
+
+  // ═══════════════════════════════════════════════
+  // DARK MODE TOGGLE
+  // ═══════════════════════════════════════════════
+  function setTheme(theme) {
+    document.documentElement.setAttribute('data-theme', theme);
+    localStorage.setItem('ofpdt-theme', theme);
+  }
+
+  var savedTheme = localStorage.getItem('ofpdt-theme');
+  if (savedTheme) setTheme(savedTheme);
+
+  function toggleTheme() {
+    var current = document.documentElement.getAttribute('data-theme');
+    setTheme(current === 'dark' ? 'light' : 'dark');
+  }
+
+  document.getElementById('themeToggle').addEventListener('click', toggleTheme);
+  document.getElementById('themeToggleCompact').addEventListener('click', toggleTheme);
+  document.getElementById('themeToggleMobile').addEventListener('click', function() {
+    toggleTheme();
+    closeNav();
+  });
+
+  // ═══════════════════════════════════════════════
+  // SMOOTH SCROLL
+  // ═══════════════════════════════════════════════
+  document.querySelectorAll('a[href^="#"]').forEach(function(a) {
+    a.addEventListener('click', function(e) {
+      var target = document.querySelector(this.getAttribute('href'));
+      if (target) {
+        e.preventDefault();
+        var top = target.getBoundingClientRect().top + window.scrollY - 80;
+        window.scrollTo({ top: top, behavior: 'smooth' });
+      }
+    });
+  });
+
+})();
+</script>
+
+</body>
+</html>
