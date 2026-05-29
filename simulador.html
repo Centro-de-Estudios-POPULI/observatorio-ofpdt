@@ -158,10 +158,11 @@ h1, h2, h3, h4 { font-family: 'Playfair Display', Georgia, serif; font-weight: 7
 }
 .sim-grid {
   display: grid;
-  grid-template-columns: var(--sidebar-w) 1fr;
+  grid-template-columns: minmax(0, var(--sidebar-w)) minmax(0, 1fr);
   gap: 24px;
   align-items: start;
 }
+.sidebar, .results-panel { min-width: 0; }
 
 /* ── Cards ── */
 .card {
@@ -170,6 +171,7 @@ h1, h2, h3, h4 { font-family: 'Playfair Display', Georgia, serif; font-weight: 7
   border-radius: var(--radius);
   box-shadow: var(--shadow-sm);
   overflow: hidden;
+  max-width: 100%;
   transition: box-shadow .3s;
 }
 .card:hover { box-shadow: var(--shadow); }
@@ -249,7 +251,11 @@ input[type="range"]:focus-visible::-webkit-slider-thumb { box-shadow: 0 0 0 3px 
 .weights-legend i { width: 8px; height: 8px; border-radius: 2px; display: inline-block; }
 
 /* ── Summary table ── */
-.summary-tbl { width: 100%; border-collapse: collapse; font-size: 13px; }
+.tbl-scroll { max-width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+.summary-tbl th, .summary-tbl td,
+.dept-tbl th, .dept-tbl td,
+.ranking-tbl td { white-space: nowrap; }
+.summary-tbl { width: 100%; min-width: 420px; border-collapse: collapse; font-size: 13px; }
 .summary-tbl th {
   text-align: left; font-weight: 600; padding: 10px 12px;
   border-bottom: 2px solid var(--bg3); color: var(--ink2);
@@ -299,7 +305,7 @@ input[type="range"]:focus-visible::-webkit-slider-thumb { box-shadow: 0 0 0 3px 
 .split-legend i { width: 10px; height: 10px; border-radius: 3px; display: inline-block; }
 
 /* ── Dept table ── */
-.dept-tbl { width: 100%; border-collapse: collapse; font-size: 12px; }
+.dept-tbl { width: 100%; min-width: 460px; border-collapse: collapse; font-size: 12px; }
 .dept-tbl th {
   text-align: left; font-weight: 600; padding: 8px 10px;
   border-bottom: 2px solid var(--bg3); color: var(--ink2);
@@ -353,8 +359,8 @@ input[type="range"]:focus-visible::-webkit-slider-thumb { box-shadow: 0 0 0 3px 
   border-color: var(--g400);
 }
 .ranking-controls select { min-width: 160px; cursor: pointer; }
-.ranking-wrap { max-height: 600px; overflow-y: auto; }
-.ranking-tbl { width: 100%; border-collapse: collapse; font-size: 12px; }
+.ranking-wrap { max-height: 600px; overflow-y: auto; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+.ranking-tbl { width: 100%; min-width: 780px; border-collapse: collapse; font-size: 12px; }
 .ranking-tbl thead { position: sticky; top: 0; z-index: 2; }
 .ranking-tbl th {
   text-align: left; font-weight: 600; padding: 10px 10px;
@@ -428,7 +434,7 @@ input[type="range"]:focus-visible::-webkit-slider-thumb { box-shadow: 0 0 0 3px 
 
 /* ── Responsive ── */
 @media (max-width: 960px) {
-  .sim-grid { grid-template-columns: 1fr; }
+  .sim-grid { grid-template-columns: minmax(0, 1fr); }
   .sidebar { position: static; }
   .header-back span { display: none; }
   .kpi-pill { min-width: 140px; }
@@ -436,13 +442,26 @@ input[type="range"]:focus-visible::-webkit-slider-thumb { box-shadow: 0 0 0 3px 
 }
 @media (max-width: 600px) {
   .hero { padding: 36px 16px 32px; }
+  .hero-desc { font-size: 14px; margin-bottom: 24px; }
   .main-wrap { padding: 20px 16px; }
-  .kpi-pill { min-width: 100%; }
+  .kpi-row { gap: 10px; }
+  .kpi-pill { min-width: calc(50% - 5px); flex: 1 1 calc(50% - 5px); padding: 12px 14px; }
+  .kpi-value { font-size: 17px; }
+  .kpi-label { font-size: 10px; }
   .header-inner { padding: 0 12px; }
+  .header-title { font-size: 13px; }
+  .header-sub { font-size: 10px; }
+  .card-body { padding: 16px; }
+  .card-header { padding: 14px 16px 12px; }
   .map-container { height: 400px; }
   .chart-wrap { height: 240px; }
   .ranking-controls { flex-direction: column; }
   .ranking-controls input, .ranking-controls select { min-width: 100%; }
+  /* Densify tables and hint horizontal scroll on small screens */
+  .summary-tbl th, .summary-tbl td { padding: 8px 8px; }
+  .dept-tbl th, .dept-tbl td { padding: 7px 8px; }
+  .ranking-tbl th, .ranking-tbl td { padding: 8px 8px; }
+  .map-legend { bottom: 12px; right: 10px; padding: 10px 12px; }
 }
 
 /* ── Leaflet tooltip override ── */
@@ -670,12 +689,14 @@ input[type="range"]:focus-visible::-webkit-slider-thumb { box-shadow: 0 0 0 3px 
           <h3>Distribucion de la base coparticipable</h3>
         </div>
         <div class="card-body">
+          <div class="tbl-scroll">
           <table class="summary-tbl" id="summaryTable">
             <thead>
               <tr><th>Receptor</th><th class="num">%</th><th class="num">Bs MM</th><th class="num">Delta vs. actual</th></tr>
             </thead>
             <tbody></tbody>
           </table>
+          </div>
           <div class="split-bar-wrap">
             <div class="split-bar-title">Composicion porcentual</div>
             <div class="split-bar" id="splitBar">
@@ -704,7 +725,8 @@ input[type="range"]:focus-visible::-webkit-slider-thumb { box-shadow: 0 0 0 3px 
           </div>
           <h3>Desglose departamental</h3>
         </div>
-        <div class="card-body" style="overflow-x:auto">
+        <div class="card-body">
+          <div class="tbl-scroll">
           <table class="dept-tbl" id="deptTable">
             <thead>
               <tr>
@@ -718,6 +740,7 @@ input[type="range"]:focus-visible::-webkit-slider-thumb { box-shadow: 0 0 0 3px 
             </thead>
             <tbody></tbody>
           </table>
+          </div>
           <div class="chart-wrap">
             <canvas id="deptChart"></canvas>
           </div>
@@ -1635,6 +1658,15 @@ input[type="range"]:focus-visible::-webkit-slider-thumb { box-shadow: 0 0 0 3px 
       $('#loadingOverlay').querySelector('.loading-spinner').style.display = 'none';
     }
   }
+
+  // Recalculate map size on resize/orientation change (mobile)
+  let resizeTimeout = null;
+  window.addEventListener('resize', () => {
+    if (resizeTimeout) clearTimeout(resizeTimeout);
+    resizeTimeout = setTimeout(() => {
+      if (leafletMap) leafletMap.invalidateSize();
+    }, 200);
+  });
 
   // Theme observer for chart recolor
   const themeObserver = new MutationObserver(() => {
