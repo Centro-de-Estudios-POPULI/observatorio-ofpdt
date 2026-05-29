@@ -283,26 +283,7 @@ input[type="range"]:focus-visible::-webkit-slider-thumb { box-shadow: 0 0 0 3px 
 /* ── Split bar ── */
 .split-bar-wrap { margin: 20px 0; }
 .split-bar-title { font-size: 12px; color: var(--mute); margin-bottom: 8px; text-transform: uppercase; letter-spacing: .5px; }
-.split-bar {
-  display: flex; height: 28px; border-radius: 6px; overflow: hidden;
-  box-shadow: inset 0 1px 3px rgba(0,0,0,.1);
-}
-.split-bar div {
-  display: flex; align-items: center; justify-content: center;
-  font-family: 'IBM Plex Mono', monospace; font-size: 10px;
-  color: #fff; font-weight: 600; transition: flex .4s ease;
-  min-width: 0; overflow: hidden; white-space: nowrap;
-}
-.sb-tgn { background: var(--navy); }
-.sb-mun { background: var(--g600); }
-.sb-uni { background: var(--g400); }
-.sb-gob { background: var(--gold); }
-.sb-fondo { background: var(--red); }
-.split-legend {
-  display: flex; flex-wrap: wrap; gap: 14px; margin-top: 10px; font-size: 11px; color: var(--mute);
-}
-.split-legend span { display: flex; align-items: center; gap: 5px; }
-.split-legend i { width: 10px; height: 10px; border-radius: 3px; display: inline-block; }
+.comp-chart-wrap { position: relative; height: 280px; margin-top: 12px; }
 
 /* ── Dept table ── */
 .dept-tbl { width: 100%; min-width: 460px; border-collapse: collapse; font-size: 12px; }
@@ -699,20 +680,7 @@ input[type="range"]:focus-visible::-webkit-slider-thumb { box-shadow: 0 0 0 3px 
           </div>
           <div class="split-bar-wrap">
             <div class="split-bar-title">Composicion porcentual</div>
-            <div class="split-bar" id="splitBar">
-              <div class="sb-tgn" style="flex:50">TGN 50%</div>
-              <div class="sb-mun" style="flex:20">Mun 20%</div>
-              <div class="sb-uni" style="flex:5.355">Uni 5,4%</div>
-              <div class="sb-gob" style="flex:0"></div>
-              <div class="sb-fondo" style="flex:24.645"></div>
-            </div>
-            <div class="split-legend">
-              <span><i style="background:var(--navy)"></i> TGN</span>
-              <span><i style="background:var(--g600)"></i> Municipios</span>
-              <span><i style="background:var(--g400)"></i> Universidades</span>
-              <span><i style="background:var(--gold)"></i> Gobernaciones</span>
-              <span><i style="background:var(--red)"></i> Fondo de Equidad</span>
-            </div>
+            <div class="comp-chart-wrap"><canvas id="compChart"></canvas></div>
           </div>
         </div>
       </div>
@@ -970,6 +938,7 @@ input[type="range"]:focus-visible::-webkit-slider-thumb { box-shadow: 0 0 0 3px 
   let weights = { pop: 40, area: 15, nbi: 30, frag: 15 };
   let medians = {};
   let deptChart = null;
+  let compChart = null;
   let leafletMap = null;
   let geoLayer = null;
   let updateTimeout = null;
@@ -1149,8 +1118,8 @@ input[type="range"]:focus-visible::-webkit-slider-thumb { box-shadow: 0 0 0 3px 
     // Summary table
     updateSummaryTable(r);
 
-    // Split bar
-    updateSplitBar(r);
+    // Composition doughnut
+    updateCompositionChart(r);
 
     // Department table + chart
     updateDeptTable(r);
@@ -1209,20 +1178,99 @@ input[type="range"]:focus-visible::-webkit-slider-thumb { box-shadow: 0 0 0 3px 
     tbody.appendChild(totalTr);
   }
 
-  function updateSplitBar(r) {
+  // Inline plugin: draw % on each doughnut slice (skips tiny slices to avoid clutter)
+  const sliceLabels = {
+    id: 'sliceLabels',
+    afterDatasetsDraw(chart) {
+      const ctx = chart.ctx;
+      const ds = chart.data.datasets[0];
+      const total = ds.data.reduce((s, v) => s + v, 0);
+      if (total <= 0) return;
+      ctx.save();
+      ctx.font = "600 12px 'IBM Plex Mono', monospace";
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      chart.getDatasetMeta(0).data.forEach((arc, i) => {
+        const pct = (ds.data[i] / total) * 100;
+        if (pct < 4) return;
+        const p = arc.getCenterPoint();
+        const txt = pct.toLocaleString('es-BO', { maximumFractionDigits: 1 }) + '%';
+        ctx.fillStyle = 'rgba(0,0,0,.28)';
+        ctx.fillText(txt, p.x + 0.6, p.y + 0.6);
+        ctx.fillStyle = '#fff';
+        ctx.fillText(txt, p.x, p.y);
+      });
+      ctx.restore();
+    }
+  };
+
+  function updateCompositionChart(r) {
     const fondoPct = AVAILABLE_SPACE - gobPct;
-    const bar = $('#splitBar');
-    const segs = bar.children;
-    segs[0].style.flex = PCT_TGN_NEW;
-    segs[0].textContent = PCT_TGN_NEW > 8 ? 'TGN ' + fmtPct(PCT_TGN_NEW, 0) : '';
-    segs[1].style.flex = PCT_MUN;
-    segs[1].textContent = PCT_MUN > 5 ? 'Mun ' + fmtPct(PCT_MUN, 0) : '';
-    segs[2].style.flex = PCT_UNI;
-    segs[2].textContent = PCT_UNI > 3 ? fmtPct(PCT_UNI, 1) : '';
-    segs[3].style.flex = gobPct;
-    segs[3].textContent = gobPct > 3 ? 'Gob ' + fmtPct(gobPct, 1) : '';
-    segs[4].style.flex = fondoPct;
-    segs[4].textContent = fondoPct > 3 ? 'Fondo ' + fmtPct(fondoPct, 1) : '';
+    const data = [PCT_TGN_NEW, PCT_MUN, PCT_UNI, gobPct, fondoPct];
+    const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+    const textColor = isDark ? '#a0b0a4' : '#5a4d3e';
+    const borderColor = isDark ? '#1a2a1e' : '#fdfaf3';
+
+    if (compChart) {
+      compChart.data.datasets[0].data = data;
+      compChart.data.datasets[0].borderColor = borderColor;
+      compChart.options.plugins.legend.labels.color = textColor;
+      compChart.update('none');
+      return;
+    }
+
+    const ctx = $('#compChart').getContext('2d');
+    compChart = new Chart(ctx, {
+      type: 'doughnut',
+      data: {
+        labels: ['TGN', 'Municipios', 'Universidades', 'Gobernaciones', 'Fondo de Equidad'],
+        datasets: [{
+          data,
+          backgroundColor: ['#1e2530', '#1e6b42', '#3ca868', '#b8860b', '#c71e1d'],
+          borderColor, borderWidth: 2
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        cutout: '58%',
+        plugins: {
+          legend: {
+            position: 'bottom',
+            labels: {
+              font: { family: "'IBM Plex Sans'", size: 11 }, color: textColor,
+              boxWidth: 10, padding: 12, usePointStyle: true, pointStyle: 'circle',
+              generateLabels: (chart) => {
+                const ds = chart.data.datasets[0];
+                const total = ds.data.reduce((s, v) => s + v, 0);
+                return chart.data.labels.map((label, i) => ({
+                  text: `${label} · ${total > 0 ? (ds.data[i] / total * 100).toLocaleString('es-BO', { maximumFractionDigits: 1 }) : 0}%`,
+                  fillStyle: ds.backgroundColor[i],
+                  strokeStyle: ds.backgroundColor[i],
+                  lineWidth: 0,
+                  pointStyle: 'circle',
+                  index: i
+                }));
+              }
+            }
+          },
+          tooltip: {
+            backgroundColor: isDark ? '#1a2a1e' : '#fff',
+            titleColor: isDark ? '#d8e0da' : '#2a2016',
+            bodyColor: isDark ? '#a0b0a4' : '#5a4d3e',
+            borderColor: isDark ? '#243028' : '#e2dccf',
+            borderWidth: 1,
+            titleFont: { family: "'IBM Plex Sans'", weight: '600' },
+            bodyFont: { family: "'IBM Plex Mono'" },
+            padding: 12,
+            callbacks: {
+              label: (c) => c.label + ': ' + fmtPct(c.parsed)
+            }
+          }
+        }
+      },
+      plugins: [sliceLabels]
+    });
   }
 
   function updateDeptTable(r) {
@@ -1670,9 +1718,10 @@ input[type="range"]:focus-visible::-webkit-slider-thumb { box-shadow: 0 0 0 3px 
 
   // Theme observer for chart recolor
   const themeObserver = new MutationObserver(() => {
-    if (deptChart) {
+    if (deptChart || compChart) {
       const r = calculate();
-      updateDeptChart(r);
+      if (deptChart) updateDeptChart(r);
+      if (compChart) updateCompositionChart(r);
     }
   });
   themeObserver.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
