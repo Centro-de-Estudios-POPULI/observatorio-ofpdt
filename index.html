@@ -564,6 +564,7 @@ body {
 .reveal-delay-2 { transition-delay: .2s; }
 .reveal-delay-3 { transition-delay: .3s; }
 .reveal-delay-4 { transition-delay: .4s; }
+.reveal-delay-5 { transition-delay: .5s; }
 
 /* ═══════════════════════════════════════════════
    PROJECT CARDS
@@ -573,6 +574,12 @@ body {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 28px;
+}
+/* con número impar de tarjetas, la última se centra a ancho de columna */
+.projects-grid > .tilt-wrap:nth-child(odd):last-child {
+  grid-column: 1 / -1;
+  width: calc(50% - 14px);
+  margin: 0 auto;
 }
 
 .project-card {
@@ -1125,6 +1132,7 @@ body {
 
 @media (max-width: 960px) {
   .projects-grid { grid-template-columns: 1fr; }
+  .projects-grid > .tilt-wrap:nth-child(odd):last-child { width: 100%; }
   .methodology-grid { grid-template-columns: 1fr; gap: 16px; }
   .sources-grid { grid-template-columns: repeat(2, 1fr); }
   .footer-main { grid-template-columns: 1fr; gap: 32px; }
@@ -1306,7 +1314,7 @@ body {
         <span class="hero-stat-label">Gestiones</span>
       </div>
       <div class="hero-stat">
-        <span class="hero-stat-num" data-target="4">0</span>
+        <span class="hero-stat-num" data-target="5">0</span>
         <span class="hero-stat-label">Plataformas</span>
       </div>
     </div>
@@ -1446,9 +1454,46 @@ body {
     </article>
     </div>
 
+    <!-- Atlas Socioeconómico Municipal -->
+    <div class="tilt-wrap">
+    <article class="project-card project-card--censal reveal reveal-delay-4">
+      <div class="card-accent card-accent--censal"></div>
+      <div class="card-body">
+        <div class="card-top">
+          <div class="card-icon card-icon--censal">
+            <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3 3 6v15l6-3 6 3 6-3V3l-6 3-6-3z"/><path d="M9 3v15"/><path d="M15 6v15"/></svg>
+          </div>
+          <span class="card-tag card-tag--censal">Censo 2024</span>
+        </div>
+        <h3 class="card-title">Atlas Socioeconómico Municipal</h3>
+        <p class="card-desc">
+          Mapa coroplético interactivo con 136 indicadores del CPV 2024 para los 340 municipios: demografía, pueblos e idiomas, educación, salud, empleo, migración, emigración internacional, servicios básicos, vivienda, equipamiento del hogar, mortalidad y pobreza NBI.
+        </p>
+        <div class="card-metrics">
+          <div class="card-metric">
+            <span class="card-metric-num">136</span>
+            <span class="card-metric-label">Indicadores</span>
+          </div>
+          <div class="card-metric">
+            <span class="card-metric-num">340</span>
+            <span class="card-metric-label">Municipios</span>
+          </div>
+          <div class="card-metric">
+            <span class="card-metric-num">18</span>
+            <span class="card-metric-label">Grupos temáticos</span>
+          </div>
+        </div>
+        <a class="card-cta card-cta--censal" href="https://centro-de-estudios-populi.github.io/Atlas-Fiscal-Municipal/Mapa_Censo_2024_Bolivia.html" target="_blank" rel="noopener">
+          Explorar Atlas
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+        </a>
+      </div>
+    </article>
+    </div>
+
     <!-- Elecciones -->
     <div class="tilt-wrap">
-    <article class="project-card project-card--electoral reveal reveal-delay-4">
+    <article class="project-card project-card--electoral reveal reveal-delay-5">
       <div class="card-accent card-accent--electoral"></div>
       <div class="card-body">
         <div class="card-top">
