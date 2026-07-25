@@ -6,59 +6,76 @@
 <title>OFPDT — Observatorio de Finanzas Públicas y Desarrollo Territorial</title>
 <meta name="description" content="Plataforma de datos abiertos para el análisis fiscal, censal y electoral de Bolivia. Dashboards interactivos con información verificable del SIGEP, INE y TSE.">
 <meta name="theme-color" content="#0a1f14">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%230d3320'/%3E%3Cpolygon points='16,3 26,6 30,14 28,23 21,29 11,29 4,23 2,14 6,6' fill='none' stroke='%236fcf8e' stroke-width='1.5' stroke-linejoin='round'/%3E%3Cpolygon points='19,6 27,11 27,20 22,26 14,27 8,23 6,16 8,9 14,6' fill='none' stroke='%236fcf8e' stroke-width='1' stroke-linejoin='round' opacity='.5'/%3E%3C/svg%3E">
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&family=IBM+Plex+Sans:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%230d3320'/%3E%3Cpolygon points='16,3 26,6 30,14 28,23 21,29 11,29 4,23 2,14 6,6' fill='none' stroke='%2394d2bd' stroke-width='1.5' stroke-linejoin='round'/%3E%3Cpolygon points='19,6 27,11 27,20 22,26 14,27 8,23 6,16 8,9 14,6' fill='none' stroke='%2394d2bd' stroke-width='1' stroke-linejoin='round' opacity='.5'/%3E%3C/svg%3E">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,900&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script>
+/* El tema se fija ANTES de pintar: si se aplicaba recien en el JS del final, la pagina
+   renderizaba en claro y las tarjetas (transition: all .4s) hacian un flash blanco al
+   pasar a oscuro. Ademas ahora respeta la preferencia del sistema cuando no hay eleccion. */
+(function(){try{var t=localStorage.getItem('ofpdt-theme');
+  if(!t)t=matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light';
+  document.documentElement.setAttribute('data-theme',t);}catch(e){}})();
+</script>
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 :root {
-  --g900: #071a0f;
-  --g800: #0a2618;
-  --g700: #0d3320;
-  --g600: #13472d;
-  --g500: #1d5938;
-  --g400: #278a52;
-  --g300: #34a865;
-  --g200: #6fcf8e;
-  --g100: #c1ecd0;
-  --g50:  #e8f7ee;
-  --gold: #c4921c;
-  --gold-light: #dab44e;
-  --gold-pale: #fdf3d7;
+  /* verde PETROLEO de la paleta POPULI: la casa madre conserva el caracter verde/oscuro
+     del hero, dentro de la rampa oficial (#001219 -> #00323d -> #005f73 -> #0a9396 -> #94d2bd) */
+  --g900: #001219;
+  --g800: #00232c;
+  --g700: #00323d;
+  --g600: #00485a;
+  --g500: #005f73;
+  --g400: #077f8c;
+  --g300: #0a9396;
+  --g200: #5cc3c9;
+  --g100: #94d2bd;
+  --g50:  #e6f4f1;
+  --gold: #ee9b00;
+  --gold-light: #f0b23f;
+  --gold-pale: #f8e9c4;
   --red: #c71e1d;
-  --red-dark: #8f1514;
-  --blue: #1f6feb;
-  --blue-dark: #1556c0;
-  --navy: #162b50;
-  --navy-deep: #0d1b35;
-  --bg: #f5f1e8;
-  --bg2: #ede8db;
-  --bg3: #e2dccf;
-  --ink: #2a2016;
-  --ink2: #5a4d3e;
-  --mute: #8a7d6e;
-  --faint: #b5aa9a;
-  --white: #fdfaf4;
+  --red-dark: #9b2226;
+  --blue: #0a9396;
+  --blue-dark: #005f73;
+  --navy: #013a46;
+  --navy-deep: #001219;
+  /* color propio de cada plataforma: el mismo con el que ya se presenta cada producto */
+  --c-fiscal: #5c1618; --c-fiscal-dk: #3f0e10;
+  --c-dept:   #c06a1e; --c-dept-dk:   #9c5416;
+  --c-pacto:  #ee9b00; --c-pacto-dk:  #9c5416;   /* el oscuro es el que va en texto */
+  --c-socio:  #013a46; --c-socio-dk:  #001219;
+  --c-censal: #0a9396; --c-censal-dk: #005f73;
+  --c-elec:   #c71e1d; --c-elec-dk:   #9b2226;
+  --bg: #f4f2ec;
+  --bg2: #eceadf;
+  --bg3: #e4dfd4;
+  --ink: #16232c;
+  --ink2: #48585f;
+  --mute: #7c8a93;
+  --faint: #aab4ba;
+  --white: #ffffff;
   --shadow-sm: 0 1px 3px rgba(30,20,10,.06);
   --shadow: 0 4px 16px rgba(30,20,10,.08);
   --shadow-lg: 0 12px 40px rgba(30,20,10,.14);
   --shadow-xl: 0 20px 60px rgba(30,20,10,.18);
-  --radius: 16px;
-  --radius-sm: 10px;
+  --radius: 0px;      /* esquinas cuadradas, como el resto del Observatorio */
+  --radius-sm: 0px;
   --max-w: 1200px;
   --header-h: 72px;
 }
 
 /* ── Dark mode overrides ── */
 [data-theme="dark"] {
-  --bg: #121a14;
-  --bg2: #1a2a1e;
-  --bg3: #243028;
-  --ink: #d8e0da;
-  --ink2: #a0b0a4;
-  --mute: #7a8a7e;
-  --faint: #4a5a4e;
-  --white: #1a2a1e;
+  --bg: #0e1519;
+  --bg2: #141e24;
+  --bg3: #233039;
+  --ink: #e9eff2;
+  --ink2: #aebdc5;
+  --mute: #80929c;
+  --faint: #61727b;
+  --white: #141e24;
   --shadow-sm: 0 1px 3px rgba(0,0,0,.2);
   --shadow: 0 4px 16px rgba(0,0,0,.25);
   --shadow-lg: 0 12px 40px rgba(0,0,0,.35);
@@ -70,19 +87,24 @@
 [data-theme="dark"] .inst-logo img { filter: grayscale(.3) brightness(1.1); }
 [data-theme="dark"] .inst-logo:hover img { filter: grayscale(0) brightness(1.1); }
 [data-theme="dark"] .project-card { background: var(--bg2); border-color: var(--bg3); }
-[data-theme="dark"] .card-title { color: #e0ece4; }
-[data-theme="dark"] .card-icon--fiscal { background: rgba(29,89,56,.25); }
-[data-theme="dark"] .card-icon--departamental { background: rgba(199,30,29,.15); }
-[data-theme="dark"] .card-icon--censal { background: rgba(31,111,235,.15); }
-[data-theme="dark"] .card-icon--electoral { background: rgba(22,43,80,.2); }
-[data-theme="dark"] .card-tag--fiscal { background: rgba(29,89,56,.2); }
-[data-theme="dark"] .card-tag--departamental { background: rgba(199,30,29,.12); }
-[data-theme="dark"] .card-tag--censal { background: rgba(31,111,235,.12); }
-[data-theme="dark"] .card-tag--electoral { background: rgba(22,43,80,.15); }
+[data-theme="dark"] .card-title { color: #dfe9ee; }
+[data-theme="dark"] .project-card--fiscal .card-metric-num { color: #e08b8d; }
+[data-theme="dark"] .project-card--departamental .card-metric-num { color: #e8a763; }
+[data-theme="dark"] .project-card--censal .card-metric-num { color: #6fd0cf; }
+[data-theme="dark"] .project-card--socio .card-metric-num { color: #7fc7cf; }
+[data-theme="dark"] .project-card--electoral .card-metric-num { color: #e88b8a; }
+[data-theme="dark"] .project-card--pacto .card-metric-num { color: #f2b64a; }
+/* en oscuro: el chip se aclara y el texto toma el tono claro del producto para no perderse */
+[data-theme="dark"] .card-icon--fiscal,[data-theme="dark"] .card-tag--fiscal { background: rgba(155,34,38,.22); color: #e08b8d; }
+[data-theme="dark"] .card-icon--departamental,[data-theme="dark"] .card-tag--departamental { background: rgba(192,106,30,.22); color: #e8a763; }
+[data-theme="dark"] .card-icon--censal,[data-theme="dark"] .card-tag--censal { background: rgba(10,147,150,.22); color: #6fd0cf; }
+[data-theme="dark"] .card-icon--socio,[data-theme="dark"] .card-tag--socio { background: rgba(1,58,70,.5); color: #7fc7cf; }
+[data-theme="dark"] .card-icon--electoral,[data-theme="dark"] .card-tag--electoral { background: rgba(199,30,29,.2); color: #e88b8a; }
+[data-theme="dark"] .card-icon--pacto,[data-theme="dark"] .card-tag--pacto { background: rgba(238,155,0,.2); color: #f2b64a; }
 [data-theme="dark"] .card-metrics { border-color: var(--bg3); }
 [data-theme="dark"] .source-card { background: var(--bg2); border-color: var(--bg3); }
-[data-theme="dark"] .source-icon { background: rgba(29,89,56,.2); }
-[data-theme="dark"] .source-name { color: #c0d0c4; }
+[data-theme="dark"] .source-icon { background: rgba(0,95,115,.2); }
+[data-theme="dark"] .source-name { color: #c2d0d7; }
 [data-theme="dark"] .section-title { color: var(--g200); }
 [data-theme="dark"] .section-divider--beige svg { fill: var(--bg); }
 [data-theme="dark"] .section-divider--white svg { fill: var(--bg2); }
@@ -91,7 +113,7 @@ html { scroll-behavior: smooth; }
 
 body {
   background: var(--bg);
-  font-family: 'IBM Plex Sans', system-ui, -apple-system, sans-serif;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
   color: var(--ink);
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
@@ -119,7 +141,7 @@ body {
   content: '';
   position: absolute;
   inset: 0;
-  background: rgba(7,26,15,.0);
+  background: rgba(0,18,25,.0);
   backdrop-filter: blur(0px);
   -webkit-backdrop-filter: blur(0px);
   transition: all .4s cubic-bezier(.22,.68,0,1);
@@ -127,7 +149,7 @@ body {
 }
 
 .header.scrolled::before {
-  background: rgba(7,26,15,.85);
+  background: rgba(0,18,25,.85);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   border-bottom: 1px solid rgba(255,255,255,.06);
@@ -157,16 +179,16 @@ body {
 .header-logo-mark {
   width: 38px;
   height: 38px;
-  border-radius: 10px;
+  border-radius: 0;
   background: linear-gradient(135deg, var(--g500), var(--g400));
   display: flex;
   align-items: center;
   justify-content: center;
-  font-family: 'Playfair Display', serif;
+  font-family: 'Fraunces', Georgia, serif;
   font-size: 18px;
   font-weight: 700;
   color: #fff;
-  box-shadow: 0 2px 8px rgba(29,89,56,.3);
+  box-shadow: 0 2px 8px rgba(0,95,115,.3);
   transition: transform .3s;
   flex-shrink: 0;
 }
@@ -174,7 +196,7 @@ body {
 .header-brand:hover .header-logo-mark { transform: scale(1.05); }
 
 .header-brand-text {
-  font-family: 'IBM Plex Sans', sans-serif;
+  font-family: 'Inter', system-ui, sans-serif;
   font-size: .78em;
   font-weight: 600;
   color: rgba(255,255,255,.9);
@@ -191,7 +213,7 @@ body {
 
 .header-logo-svg {
   flex-shrink: 0;
-  filter: drop-shadow(0 2px 6px rgba(29,89,56,.3));
+  filter: drop-shadow(0 2px 6px rgba(0,95,115,.3));
 }
 
 .header-nav {
@@ -206,7 +228,7 @@ body {
   font-size: .8em;
   font-weight: 500;
   padding: 8px 16px;
-  border-radius: 8px;
+  border-radius: 0;
   transition: all .25s;
   position: relative;
 }
@@ -226,7 +248,7 @@ body {
   border: 1px solid rgba(255,255,255,.1);
   color: rgba(255,255,255,.65);
   padding: 7px;
-  border-radius: 8px;
+  border-radius: 0;
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -250,7 +272,7 @@ body {
 
 .theme-toggle--mobile span {
   color: rgba(255,255,255,.6);
-  font-family: 'IBM Plex Sans', sans-serif;
+  font-family: 'Inter', system-ui, sans-serif;
 }
 
 .header-right-mobile {
@@ -268,7 +290,7 @@ body {
   color: rgba(255,255,255,.7);
   padding: 8px;
   cursor: pointer;
-  border-radius: 8px;
+  border-radius: 0;
   transition: background .2s;
 }
 
@@ -322,7 +344,7 @@ body {
   z-index: 150;
   width: 0%;
   transition: none;
-  box-shadow: 0 0 10px rgba(111,207,142,.4);
+  box-shadow: 0 0 10px rgba(148,210,189,.4);
 }
 
 /* Section curved dividers */
@@ -351,7 +373,7 @@ body {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  background: rgba(52,168,101,.1);
+  background: rgba(10,147,150,.12);
   border: 1px solid rgba(52,168,101,.2);
   color: var(--g200);
   font-size: .72em;
@@ -359,7 +381,7 @@ body {
   letter-spacing: 1.5px;
   text-transform: uppercase;
   padding: 7px 20px;
-  border-radius: 24px;
+  border-radius: 0;
   margin-bottom: 28px;
   backdrop-filter: blur(8px);
 }
@@ -378,7 +400,7 @@ body {
 }
 
 .hero h1 {
-  font-family: 'Playfair Display', Georgia, serif;
+  font-family: 'Fraunces', Georgia, serif;
   font-size: clamp(2.2em, 5.5vw, 3.8em);
   color: #fff;
   font-weight: 700;
@@ -417,7 +439,7 @@ body {
 .card-body { transform: translateZ(0); }
 
 .hero-subtitle {
-  font-family: 'IBM Plex Sans', sans-serif;
+  font-family: 'Inter', system-ui, sans-serif;
   font-size: clamp(.95em, 1.5vw, 1.15em);
   font-weight: 300;
   color: rgba(255,255,255,.5);
@@ -438,7 +460,7 @@ body {
   justify-content: center;
   gap: 1px;
   background: rgba(255,255,255,.06);
-  border-radius: 16px;
+  border-radius: 0;
   overflow: hidden;
   border: 1px solid rgba(255,255,255,.06);
 }
@@ -455,7 +477,7 @@ body {
 .hero-stat:hover { background: rgba(255,255,255,.05); }
 
 .hero-stat-num {
-  font-family: 'IBM Plex Mono', monospace;
+  font-family: 'Inter', system-ui, sans-serif;
   font-size: 2em;
   font-weight: 600;
   color: #fff;
@@ -526,11 +548,11 @@ body {
   width: 24px;
   height: 2px;
   background: var(--g400);
-  border-radius: 1px;
+  border-radius: 0;
 }
 
 .section-title {
-  font-family: 'Playfair Display', serif;
+  font-family: 'Fraunces', Georgia, serif;
   font-size: clamp(1.6em, 3vw, 2.2em);
   font-weight: 700;
   color: var(--g800);
@@ -620,15 +642,16 @@ body {
   z-index: 2;
 }
 
-.card-accent--fiscal { background: linear-gradient(90deg, var(--g700), var(--g400), var(--g300)); }
-.card-accent--departamental { background: linear-gradient(90deg, var(--red-dark), var(--red), #e84948); }
-.card-accent--censal { background: linear-gradient(90deg, var(--blue-dark), var(--blue), #58a6ff); }
-.card-accent--electoral { background: linear-gradient(90deg, var(--navy-deep), var(--navy), #2a5aae); }
+.card-accent--fiscal { background: linear-gradient(90deg, var(--c-fiscal-dk), var(--c-fiscal), #9b2226); }
+.card-accent--departamental { background: linear-gradient(90deg, var(--c-dept-dk), var(--c-dept), #df5d25); }
+.card-accent--censal { background: linear-gradient(90deg, var(--c-censal-dk), var(--c-censal), #94d2bd); }
+.card-accent--socio { background: linear-gradient(90deg, var(--c-socio-dk), var(--c-socio), #0a9396); }
+.card-accent--electoral { background: linear-gradient(90deg, var(--c-elec-dk), var(--c-elec), #df5d25); }
 
-.project-card--fiscal::before { box-shadow: inset 0 0 0 1px rgba(29,89,56,.15); }
+.project-card--fiscal::before { box-shadow: inset 0 0 0 1px rgba(0,95,115,.15); }
 .project-card--departamental::before { box-shadow: inset 0 0 0 1px rgba(199,30,29,.12); }
-.project-card--censal::before { box-shadow: inset 0 0 0 1px rgba(31,111,235,.12); }
-.project-card--electoral::before { box-shadow: inset 0 0 0 1px rgba(22,43,80,.12); }
+.project-card--censal::before { box-shadow: inset 0 0 0 1px rgba(10,147,150,.12); }
+.project-card--electoral::before { box-shadow: inset 0 0 0 1px rgba(1,58,70,.12); }
 
 .card-body {
   padding: 32px;
@@ -649,7 +672,7 @@ body {
 .card-icon {
   width: 52px;
   height: 52px;
-  border-radius: 14px;
+  border-radius: 0;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -659,10 +682,11 @@ body {
 
 .project-card:hover .card-icon { transform: scale(1.08) rotate(-2deg); }
 
-.card-icon--fiscal { background: linear-gradient(135deg, #e8f5ed, #d0eeda); color: var(--g600); }
-.card-icon--departamental { background: linear-gradient(135deg, #fdecea, #fbd5d5); color: var(--red-dark); }
-.card-icon--censal { background: linear-gradient(135deg, #e8eff8, #d0dfef); color: var(--blue-dark); }
-.card-icon--electoral { background: linear-gradient(135deg, #e8ecf4, #d0d8e8); color: var(--navy-deep); }
+.card-icon--fiscal { background: color-mix(in srgb, var(--c-fiscal) 12%, transparent); color: var(--c-fiscal); }
+.card-icon--departamental { background: color-mix(in srgb, var(--c-dept) 14%, transparent); color: var(--c-dept-dk); }
+.card-icon--censal { background: color-mix(in srgb, var(--c-censal) 14%, transparent); color: var(--c-censal-dk); }
+.card-icon--socio { background: color-mix(in srgb, var(--c-socio) 12%, transparent); color: var(--c-socio); }
+.card-icon--electoral { background: color-mix(in srgb, var(--c-elec) 12%, transparent); color: var(--c-elec-dk); }
 
 .card-tag {
   font-size: .6em;
@@ -670,16 +694,17 @@ body {
   letter-spacing: 1.5px;
   text-transform: uppercase;
   padding: 4px 12px;
-  border-radius: 6px;
+  border-radius: 0;
 }
 
-.card-tag--fiscal { background: rgba(29,89,56,.08); color: var(--g600); }
-.card-tag--departamental { background: rgba(199,30,29,.06); color: var(--red-dark); }
-.card-tag--censal { background: rgba(31,111,235,.06); color: var(--blue-dark); }
-.card-tag--electoral { background: rgba(22,43,80,.06); color: var(--navy); }
+.card-tag--fiscal { background: color-mix(in srgb, var(--c-fiscal) 9%, transparent); color: var(--c-fiscal); }
+.card-tag--departamental { background: color-mix(in srgb, var(--c-dept) 11%, transparent); color: var(--c-dept-dk); }
+.card-tag--censal { background: color-mix(in srgb, var(--c-censal) 12%, transparent); color: var(--c-censal-dk); }
+.card-tag--socio { background: color-mix(in srgb, var(--c-socio) 10%, transparent); color: var(--c-socio); }
+.card-tag--electoral { background: color-mix(in srgb, var(--c-elec) 9%, transparent); color: var(--c-elec-dk); }
 
 .card-title {
-  font-family: 'Playfair Display', serif;
+  font-family: 'Fraunces', Georgia, serif;
   font-size: 1.45em;
   font-weight: 700;
   color: var(--g800);
@@ -708,16 +733,17 @@ body {
 .card-metric { display: flex; flex-direction: column; }
 
 .card-metric-num {
-  font-family: 'IBM Plex Mono', monospace;
+  font-family: 'Inter', system-ui, sans-serif;
   font-size: 1.25em;
   font-weight: 600;
   line-height: 1;
 }
 
-.project-card--fiscal .card-metric-num { color: var(--g500); }
-.project-card--departamental .card-metric-num { color: var(--red); }
-.project-card--censal .card-metric-num { color: var(--blue); }
-.project-card--electoral .card-metric-num { color: var(--navy); }
+.project-card--fiscal .card-metric-num { color: var(--c-fiscal); }
+.project-card--departamental .card-metric-num { color: var(--c-dept-dk); }
+.project-card--censal .card-metric-num { color: var(--c-censal-dk); }
+.project-card--socio .card-metric-num { color: var(--c-socio); }
+.project-card--electoral .card-metric-num { color: var(--c-elec-dk); }
 
 .card-metric-label {
   font-size: .65em;
@@ -752,22 +778,24 @@ body {
 
 .card-cta:hover::before { opacity: 1; }
 
-.card-cta--fiscal { background: var(--g500); color: #fff; }
-.card-cta--fiscal:hover { background: var(--g600); box-shadow: 0 4px 16px rgba(29,89,56,.35); }
+.card-cta--fiscal { background: var(--c-fiscal); color: #fff; }
+.card-cta--fiscal:hover { background: var(--c-fiscal-dk); box-shadow: 0 4px 16px rgba(92,22,24,.35); }
 /* Variante insignia: Simulador del Pacto Fiscal (ámbar) */
-.card-accent--pacto { background: linear-gradient(90deg, #7c5410, var(--gold), #e6bc59); }
-.project-card--pacto::before { box-shadow: inset 0 0 0 1px rgba(196,146,28,.18); }
-.project-card--pacto .card-metric-num { color: var(--gold); }
-.card-icon--pacto { background: linear-gradient(135deg, #f8efd7, #f0e0b4); color: #7c5410; }
-.card-tag--pacto { background: rgba(196,146,28,.08); color: #7c5410; }
-.card-cta--pacto { background: var(--gold); color: #fff; }
-.card-cta--pacto:hover { background: #a97a12; box-shadow: 0 4px 16px rgba(196,146,28,.35); }
-.card-cta--departamental { background: var(--red); color: #fff; }
-.card-cta--departamental:hover { background: var(--red-dark); box-shadow: 0 4px 16px rgba(199,30,29,.3); }
-.card-cta--censal { background: var(--blue); color: #fff; }
-.card-cta--censal:hover { background: var(--blue-dark); box-shadow: 0 4px 16px rgba(31,111,235,.3); }
-.card-cta--electoral { background: var(--navy); color: #fff; }
-.card-cta--electoral:hover { background: var(--navy-deep); box-shadow: 0 4px 16px rgba(22,43,80,.3); }
+.card-accent--pacto { background: linear-gradient(90deg, var(--c-pacto-dk), var(--c-pacto), #f0b23f); }
+.project-card--pacto::before { box-shadow: inset 0 0 0 1px rgba(238,155,0,.18); }
+.project-card--pacto .card-metric-num { color: var(--c-pacto-dk); }
+.card-icon--pacto { background: color-mix(in srgb, var(--c-pacto) 16%, transparent); color: var(--c-pacto-dk); }
+.card-tag--pacto { background: color-mix(in srgb, var(--c-pacto) 14%, transparent); color: #7d420f; }
+.card-cta--pacto { background: var(--c-pacto-dk); color: #fff; }
+.card-cta--pacto:hover { background: #7d420f; box-shadow: 0 4px 16px rgba(156,84,22,.4); }
+.card-cta--departamental { background: var(--c-dept); color: #fff; }
+.card-cta--departamental:hover { background: var(--c-dept-dk); box-shadow: 0 4px 16px rgba(192,106,30,.32); }
+.card-cta--censal { background: var(--c-censal); color: #fff; }
+.card-cta--censal:hover { background: var(--c-censal-dk); box-shadow: 0 4px 16px rgba(10,147,150,.3); }
+.card-cta--socio { background: var(--c-socio); color: #fff; }
+.card-cta--socio:hover { background: var(--c-socio-dk); box-shadow: 0 4px 16px rgba(1,58,70,.35); }
+.card-cta--electoral { background: var(--c-elec); color: #fff; }
+.card-cta--electoral:hover { background: var(--c-elec-dk); box-shadow: 0 4px 16px rgba(199,30,29,.3); }
 
 .card-cta svg {
   width: 16px;
@@ -817,7 +845,7 @@ body {
 .method-icon {
   width: 60px;
   height: 60px;
-  border-radius: 16px;
+  border-radius: 0;
   background: rgba(52,168,101,.12);
   border: 1px solid rgba(52,168,101,.15);
   display: flex;
@@ -830,7 +858,7 @@ body {
 .method-card:hover .method-icon { transform: scale(1.08); }
 
 .method-title {
-  font-family: 'Playfair Display', serif;
+  font-family: 'Fraunces', Georgia, serif;
   font-size: 1.1em;
   font-weight: 700;
   color: #fff;
@@ -877,13 +905,13 @@ body {
 .source-icon {
   width: 48px;
   height: 48px;
-  border-radius: 12px;
+  border-radius: 0;
   background: var(--g50);
   display: flex;
   align-items: center;
   justify-content: center;
   margin: 0 auto 14px;
-  font-family: 'IBM Plex Mono', monospace;
+  font-family: 'Inter', system-ui, sans-serif;
   font-size: .75em;
   font-weight: 600;
   color: var(--g600);
@@ -956,7 +984,7 @@ body {
   animation: logo-breathe 8s ease-in-out infinite;
 }
 
-.hero-logo-svg { filter: drop-shadow(0 0 20px rgba(111,207,142,.15)); }
+.hero-logo-svg { filter: drop-shadow(0 0 20px rgba(148,210,189,.15)); }
 
 @keyframes logo-breathe {
   0%, 100% { transform: translateY(0) rotate(0deg); }
@@ -996,7 +1024,7 @@ body {
 }
 
 .footer-brand h3 {
-  font-family: 'Playfair Display', serif;
+  font-family: 'Fraunces', Georgia, serif;
   font-size: 1.2em;
   color: #fff;
   margin-bottom: 12px;
@@ -1014,13 +1042,13 @@ body {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  background: rgba(52,168,101,.1);
+  background: rgba(10,147,150,.12);
   border: 1px solid rgba(52,168,101,.15);
   color: var(--g200);
   font-size: .7em;
   font-weight: 600;
   padding: 5px 14px;
-  border-radius: 6px;
+  border-radius: 0;
 }
 
 .footer-links h4 {
@@ -1092,7 +1120,7 @@ body {
   position: fixed;
   inset: 0;
   z-index: 200;
-  background: rgba(7,26,15,.95);
+  background: rgba(0,18,25,.95);
   backdrop-filter: blur(24px);
   -webkit-backdrop-filter: blur(24px);
   flex-direction: column;
@@ -1115,7 +1143,7 @@ body {
   font-size: 1.3em;
   font-weight: 500;
   padding: 14px 32px;
-  border-radius: 12px;
+  border-radius: 0;
   transition: all .2s;
 }
 
@@ -1151,7 +1179,7 @@ body {
   .mobile-nav { display: flex; }
   .hero { padding: 100px 20px 64px; min-height: auto; min-height: 100svh; }
   .section { padding: 64px 20px; }
-  .hero-stats { flex-wrap: wrap; border-radius: 12px; }
+  .hero-stats { flex-wrap: wrap; border-radius: 0; }
   .hero-stat { min-width: 100px; padding: 18px 20px; }
   .institucional-grid { grid-template-columns: repeat(4, 1fr); }
   .hero-logo-main svg { width: 120px; height: 120px; }
@@ -1169,7 +1197,7 @@ body {
   .hero-logo-main svg { width: 96px; height: 96px; }
   .hero-logo-main { margin-bottom: 14px; }
   .hero-badge { font-size: .6em; padding: 5px 14px; margin-bottom: 18px; }
-  .hero-stats { border-radius: 10px; }
+  .hero-stats { border-radius: 0; }
   .hero-stat { min-width: 70px; padding: 12px 8px; }
   .hero-stat-num { font-size: 1.3em; }
   .hero-stat-label { font-size: .58em; letter-spacing: .8px; }
@@ -1180,7 +1208,7 @@ body {
   .section-desc { font-size: .88em; }
   .card-body { padding: 20px; }
   .card-top { margin-bottom: 14px; }
-  .card-icon { width: 44px; height: 44px; border-radius: 10px; }
+  .card-icon { width: 44px; height: 44px; border-radius: 0; }
   .card-title { font-size: 1.2em; }
   .card-desc { font-size: .82em; margin-bottom: 18px; }
   .card-metrics { gap: 14px; padding: 14px 0; margin-bottom: 18px; }
@@ -1190,7 +1218,7 @@ body {
   .method-title { font-size: 1em; }
   .method-desc { font-size: .8em; }
   .institucional-grid { grid-template-columns: repeat(3, 1fr); gap: 10px; }
-  .inst-logo { padding: 10px; border-radius: 10px; }
+  .inst-logo { padding: 10px; border-radius: 0; }
   .sources-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
   .source-card { padding: 20px 14px; }
   .source-icon { width: 40px; height: 40px; font-size: .65em; }
@@ -1282,8 +1310,8 @@ body {
             <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
           </filter>
           <radialGradient id="centerGlow" cx="50%" cy="50%" r="50%">
-            <stop offset="0%" stop-color="rgba(111,207,142,.12)"/>
-            <stop offset="100%" stop-color="rgba(111,207,142,0)"/>
+            <stop offset="0%" stop-color="rgba(148,210,189,.12)"/>
+            <stop offset="100%" stop-color="rgba(148,210,189,0)"/>
           </radialGradient>
         </defs>
         <circle cx="100" cy="100" r="55" fill="url(#centerGlow)"/>
@@ -1503,17 +1531,17 @@ body {
     <!-- Atlas Socioeconómico Municipal -->
     <div class="tilt-wrap">
     <article class="project-card project-card--censal reveal reveal-delay-4">
-      <div class="card-accent card-accent--censal"></div>
+      <div class="card-accent card-accent--socio"></div>
       <div class="card-body">
         <div class="card-top">
-          <div class="card-icon card-icon--censal">
+          <div class="card-icon card-icon--socio">
             <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3 3 6v15l6-3 6 3 6-3V3l-6 3-6-3z"/><path d="M9 3v15"/><path d="M15 6v15"/></svg>
           </div>
-          <span class="card-tag card-tag--censal">Censo 2024</span>
+          <span class="card-tag card-tag--socio">Censo 2024</span>
         </div>
         <h3 class="card-title">Atlas Socioeconómico Municipal</h3>
         <p class="card-desc">
-          Mapa coroplético interactivo con 136 indicadores del CPV 2024 para los 340 municipios: demografía, pueblos e idiomas, educación, salud, empleo, migración, emigración internacional, servicios básicos, vivienda, equipamiento del hogar, mortalidad y pobreza NBI.
+          Mapa coroplético interactivo con 136 indicadores del CPV 2024 para los 343 municipios: demografía, pueblos e idiomas, educación, salud, empleo, migración, emigración internacional, servicios básicos, vivienda, equipamiento del hogar, mortalidad y pobreza NBI.
         </p>
         <div class="card-metrics">
           <div class="card-metric">
@@ -1521,7 +1549,7 @@ body {
             <span class="card-metric-label">Indicadores</span>
           </div>
           <div class="card-metric">
-            <span class="card-metric-num">340</span>
+            <span class="card-metric-num">343</span>
             <span class="card-metric-label">Municipios</span>
           </div>
           <div class="card-metric">
@@ -1529,7 +1557,7 @@ body {
             <span class="card-metric-label">Grupos temáticos</span>
           </div>
         </div>
-        <a class="card-cta card-cta--censal" href="https://centro-de-estudios-populi.github.io/Atlas-Fiscal-Municipal/Mapa_Censo_2024_Bolivia.html" target="_blank" rel="noopener">
+        <a class="card-cta card-cta--socio" href="https://centro-de-estudios-populi.github.io/Atlas-Fiscal-Municipal/Mapa_Censo_2024_Bolivia.html" target="_blank" rel="noopener">
           Explorar Atlas
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
         </a>
@@ -1817,7 +1845,7 @@ body {
       // Draw particle
       ctx.beginPath();
       ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
-      ctx.fillStyle = 'rgba(111,207,142,' + p.alpha + ')';
+      ctx.fillStyle = 'rgba(148,210,189,' + p.alpha + ')';
       ctx.fill();
 
       // Connect nearby particles
@@ -1838,7 +1866,7 @@ body {
           ctx.beginPath();
           ctx.moveTo(p.x, p.y);
           ctx.lineTo(p2.x, p2.y);
-          ctx.strokeStyle = 'rgba(111,207,142,' + lineAlpha + ')';
+          ctx.strokeStyle = 'rgba(148,210,189,' + lineAlpha + ')';
           ctx.lineWidth = 0.6;
           ctx.stroke();
         }
@@ -2072,8 +2100,8 @@ body {
     localStorage.setItem('ofpdt-theme', theme);
   }
 
-  var savedTheme = localStorage.getItem('ofpdt-theme');
-  if (savedTheme) setTheme(savedTheme);
+  // el tema ya quedo aplicado por el script del <head>; aca solo se sincroniza el icono
+  if (!document.documentElement.getAttribute('data-theme')) setTheme('light');
 
   function toggleTheme() {
     var current = document.documentElement.getAttribute('data-theme');
